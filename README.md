@@ -1,6 +1,6 @@
 # Niner Skills Quest
 
-A local demo for exploring how coursework can suggest skills for a student profile.
+A local demo for selecting completed courses and seeing their suggested skills.
 Coursework suggestions represent possible exposure, not verified skill mastery.
 
 ## Setup
@@ -21,11 +21,20 @@ npm run build
 npm test
 ```
 
-## Demo and limitations
+## Usage
 
-The current demo displays a small illustrative course catalog and its suggested
-skills. The course mappings are not official catalog data. Authentication,
-transcript upload, and backend services are not included.
+Search the supported demo courses by code or title, choose a result, and select
+**Add course**. Remove individual selections at any time. Mapped skills update
+immediately, are deduplicated across selected courses, and are derived from
+course IDs saved in browser `localStorage`. If browser storage is unavailable or
+saved data is invalid, the app displays a message and keeps selections usable for
+the current session.
+
+## Limitations
+
+The course catalog and mappings are illustrative, not official catalog data.
+Coursework suggestions are not verified mastery. Authentication, transcript
+upload, and backend services are not included.
 
 ## AI-use disclosure
 
