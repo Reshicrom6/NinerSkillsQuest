@@ -20,6 +20,11 @@ and write failures.
 
 Ran the app locally with Vite and verified:
 
+- At the Figma reference viewport (585 × 836), the course form uses the compact
+  single-column panel, segmented entry-type header, course preview, status tags,
+  suggested-skill chips, added-items section, primary action, and purple notice.
+  The project/experience tab and in-progress status are visibly out of scope and
+  non-interactive.
 - Initial page explains that no courses are selected and no skills are mapped.
 - Searching filters by course code/title; a non-matching query shows a helpful message.
 - Adding ITCS 2214 immediately shows Java and OOP. The selected course is removed
@@ -44,5 +49,6 @@ an empty catalog but cannot be reached with the current fixed demo catalog.
 ## Handoff notes
 
 Catalog contents and mappings remain illustrative and must be confirmed against
-the official course catalog. The Figma MCP was rate-limited during implementation;
-the screenshots supplied for the issue informed the visual direction.
+the official course catalog. The updated Figma course-entry node was reviewed
+for this implementation; project/experience and in-progress entry remain outside
+the completed-course feature scope.

@@ -2,7 +2,7 @@
 
 ## Design and scope
 
-The initial UI direction comes from the course-entry, project-entry, and imported-course-review screenshots shared for this issue. They use a calm neutral surface, green skill chips, clear course labels, and a purple notice that coursework suggests exposure rather than verified mastery. The Figma MCP could not be used for a live file review because its Starter-plan tool-call limit was reached; the screenshots are the available design reference.
+The course-entry screen follows the supplied Figma design, [Manual course entry (node 76:6436)](https://www.figma.com/design/ztzR03BJFCBGFtCh3bacCc/Niner-Skills-Quest--Copy-?node-id=76-6436). Its neutral surface, compact course card, green skill/status chips, and purple coursework notice guide the visual treatment. Project/experience entry and in-progress course tracking remain disabled or out of scope because this plan covers completed courses only.
 
 This feature starts with a local demo. Authentication, transcript upload, and backend infrastructure are out of scope.
 
@@ -21,7 +21,7 @@ Skills are defined once with stable IDs in `src/data/catalog.ts`, so the career-
 ## Milestones
 
 1. **Complete — Foundation, shared types, and demo catalog** — establish a runnable application shell, basic styling, run/build/test commands, local-demo labeling, shared types, and the initial catalog. This is the first meaningful commit.
-2. **Complete — Course workflow and persistence** — add a labeled searchable course selector, add/remove controls, duplicate prevention, immediate mapped-skill updates, overlap-safe derivation, accessible empty states, localStorage persistence with recoverable errors, and shared application state.
+2. **Complete — Course workflow and persistence** — add a labeled searchable course selector, add/remove controls, duplicate prevention, immediate mapped-skill updates, overlap-safe derivation, accessible empty states, localStorage persistence with recoverable errors, and shared application state. The entry and added-items layout follows the updated Figma course panel.
 3. **Complete — Verification and handoff** — cover workflow, derivation, empty-state, accessibility, and refresh-persistence acceptance criteria; record actual outcomes in `docs/issue-1-test-results.md`; complete README setup, usage, limitations, and AI-use disclosure; prepare demonstration evidence.
 
 ## Acceptance criteria for the complete feature

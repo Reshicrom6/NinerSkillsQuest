@@ -32,6 +32,10 @@ the current session. The search field, course selector, add button, and labeled
 remove buttons work with the keyboard; course and skill updates are announced to
 assistive technology.
 
+The course-entry screen follows the supplied Figma course panel. The project or
+experience tab and in-progress status are shown only as disabled visual context;
+this feature handles completed courses only.
+
 ## Limitations
 
 The course catalog and mappings are illustrative, not official catalog data.
