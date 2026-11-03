@@ -11,8 +11,15 @@ function getApplicationRoot(): HTMLDivElement {
 }
 
 const root = getApplicationRoot();
+const announcer = document.querySelector<HTMLDivElement>("#announcer");
 let searchQuery = "";
 let selectedCourseId = "";
+
+function announce(message: string): void {
+  if (announcer) {
+    announcer.textContent = message;
+  }
+}
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => {
@@ -223,16 +230,36 @@ function render(focusTarget?: string): void {
       return;
     }
 
+    const course = courses.find((candidate) => candidate.id === courseId);
+    if (!course) {
+      return;
+    }
+
     searchQuery = "";
     selectedCourseId = "";
     courseSelectionStore.addCourse(courseId);
+    const state = courseSelectionStore.getState();
+    announce(
+      `Added ${course.code} — ${course.title}. ${state.skills.length} mapped skill${
+        state.skills.length === 1 ? "" : "s"
+      }.`,
+    );
   });
 
   root.querySelectorAll<HTMLButtonElement>("[data-remove-course]").forEach((button) => {
     button.addEventListener("click", () => {
       const courseId = button.dataset.removeCourse;
       if (courseId) {
+        const course = courses.find((candidate) => candidate.id === courseId);
         courseSelectionStore.removeCourse(courseId);
+        const state = courseSelectionStore.getState();
+        if (course) {
+          announce(
+            `Removed ${course.code} — ${course.title}. ${state.skills.length} mapped skill${
+              state.skills.length === 1 ? "" : "s"
+            } remain.`,
+          );
+        }
       }
     });
   });

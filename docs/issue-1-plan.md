@@ -22,7 +22,7 @@ Skills are defined once with stable IDs in `src/data/catalog.ts`, so the career-
 
 1. **Complete — Foundation, shared types, and demo catalog** — establish a runnable application shell, basic styling, run/build/test commands, local-demo labeling, shared types, and the initial catalog. This is the first meaningful commit.
 2. **Complete — Course workflow and persistence** — add a labeled searchable course selector, add/remove controls, duplicate prevention, immediate mapped-skill updates, overlap-safe derivation, accessible empty states, localStorage persistence with recoverable errors, and shared application state.
-3. **Verification and handoff** — cover workflow, derivation, empty-state, accessibility, and refresh-persistence acceptance criteria; record actual outcomes in `docs/issue-1-test-results.md`; complete README setup, usage, limitations, and AI-use disclosure; prepare demonstration evidence.
+3. **Complete — Verification and handoff** — cover workflow, derivation, empty-state, accessibility, and refresh-persistence acceptance criteria; record actual outcomes in `docs/issue-1-test-results.md`; complete README setup, usage, limitations, and AI-use disclosure; prepare demonstration evidence.
 
 ## Acceptance criteria for the complete feature
 

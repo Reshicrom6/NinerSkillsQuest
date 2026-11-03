@@ -62,6 +62,21 @@ describe("course selection state", () => {
     expect(store.getState().skills).toEqual([]);
   });
 
+  it("supports selected courses with no mapped skills", () => {
+    const courseWithoutSkills: Course = {
+      id: "unmapped-course",
+      code: "TEST 3000",
+      title: "Unmapped Course",
+      skillIds: [],
+    };
+    const store = new CourseSelectionStore(createStorage(), [courseWithoutSkills], []);
+
+    store.addCourse(courseWithoutSkills.id);
+
+    expect(store.getState().completedCourses).toEqual([courseWithoutSkills]);
+    expect(store.getState().skills).toEqual([]);
+  });
+
   it("persists course IDs and restores them on a new store", () => {
     const storage = createStorage();
     const firstStore = new CourseSelectionStore(storage);

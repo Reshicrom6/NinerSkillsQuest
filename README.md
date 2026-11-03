@@ -28,7 +28,9 @@ Search the supported demo courses by code or title, choose a result, and select
 immediately, are deduplicated across selected courses, and are derived from
 course IDs saved in browser `localStorage`. If browser storage is unavailable or
 saved data is invalid, the app displays a message and keeps selections usable for
-the current session.
+the current session. The search field, course selector, add button, and labeled
+remove buttons work with the keyboard; course and skill updates are announced to
+assistive technology.
 
 ## Limitations
 
