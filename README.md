@@ -41,7 +41,10 @@ assistive technology. Choose a career roadmap and one of the generic Charlotte
 employer profiles in the career goal section. The demo roadmaps are Backend
 Developer and Full-stack Developer; the current goal and roadmap skill
 targets update immediately and persist in `localStorage`. The roadmap and
-employer selectors are keyboard accessible.
+employer selectors are keyboard accessible. With a complete goal, the skill
+comparison separates course-mapped target matches from targets not recorded by
+the current course list. Unmatched targets are not treated as proof of missing
+ability.
 
 The course-entry screen follows the supplied Figma course panel. The project or
 experience tab and in-progress status are shown only as disabled visual context;

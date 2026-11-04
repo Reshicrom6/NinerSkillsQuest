@@ -416,6 +416,41 @@ select {
   background: #fff;
 }
 
+.skill-gap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.skill-gap h2,
+.skill-gap h3,
+.skill-gap p {
+  margin: 0;
+}
+
+.skill-gap h2 {
+  font-size: 13px;
+}
+
+.skill-gap h3 {
+  font-size: 11px;
+}
+
+.skill-gap-note {
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.skill-gap-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
 .career-goal-heading {
   display: flex;
   flex-direction: column;
