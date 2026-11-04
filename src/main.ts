@@ -1,5 +1,8 @@
 import { courses, skillsById } from "./data/catalog";
+import { careerRoadmaps, employerProfiles } from "./data/careerGoals";
+import { careerGoalStore } from "./state/careerGoalStore";
 import { courseSelectionStore } from "./state/courseSelectionStore";
+import { demoSessionStore } from "./state/demoSessionStore";
 import "./style.css";
 
 function getApplicationRoot(): HTMLDivElement {
@@ -21,6 +24,53 @@ function announce(message: string): void {
   }
 }
 
+function getCareerGoalAnnouncementText(careerGoal: ReturnType<typeof careerGoalStore.getState>): string {
+  if (!careerGoal.selectedRoadmapId && !careerGoal.selectedEmployerId) {
+    return "Choose a career roadmap and a Charlotte employer to set your goal.";
+  }
+
+  if (!careerGoal.selectedRoadmapId) {
+    return "Career employer selected. Choose a career roadmap to complete your goal.";
+  }
+
+  if (!careerGoal.selectedEmployerId) {
+    return "Career roadmap selected. Choose a Charlotte employer to complete your goal.";
+  }
+
+  const roadmapName = careerGoal.selectedRoadmap?.name ?? "Selected roadmap";
+  const employerName = careerGoal.selectedEmployer?.name ?? "Selected employer";
+  const targetSkillNames =
+    careerGoal.selectedRoadmap?.skillIds
+      .map((skillId) => skillsById.get(skillId)?.name)
+      .filter((skillName): skillName is string => Boolean(skillName)) ?? [];
+
+  if (targetSkillNames.length === 0) {
+    return `Career goal set to ${roadmapName} with ${employerName}. No target skills are mapped to this roadmap.`;
+  }
+
+  return `Career goal set to ${roadmapName} with ${employerName}. Target skills: ${targetSkillNames.join(", ")}.`;
+}
+
+function getSaveAnnouncementText(
+  courseState: ReturnType<typeof courseSelectionStore.getState>,
+  careerGoal: ReturnType<typeof careerGoalStore.getState>,
+): string {
+  const courseMessage =
+    courseState.persistenceMessage ??
+    `${courseState.completedCourses.length} course${courseState.completedCourses.length === 1 ? "" : "s"} saved locally.`;
+
+  if (!careerGoal.selectedRoadmapId || !careerGoal.selectedEmployerId) {
+    const goalPrompt = getCareerGoalAnnouncementText(careerGoal);
+    return `${courseMessage} ${goalPrompt}`;
+  }
+
+  const goalMessage =
+    careerGoal.persistenceMessage ??
+    `Career goal saved: ${careerGoal.selectedRoadmap?.name ?? "Selected roadmap"} with ${careerGoal.selectedEmployer?.name ?? "Selected employer"}.`;
+
+  return `${courseMessage} ${goalMessage}`;
+}
+
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => {
     const entities: Record<string, string> = {
@@ -35,7 +85,33 @@ function escapeHtml(value: string): string {
 }
 
 function render(focusTarget?: string): void {
+  const session = demoSessionStore.getState();
+  if (!session.signedIn) {
+    root.innerHTML = `
+      <main class="app-shell sign-in-shell" aria-labelledby="page-title">
+        <header class="panel-heading">
+          <div>
+            <h1 id="page-title">Niner Skills Quest</h1>
+            <p>Start a local demo session to explore the course and career-goal prototype.</p>
+          </div>
+          <span class="demo-badge">Local demo</span>
+        </header>
+        <section class="sign-in-card" aria-labelledby="sign-in-title">
+          <h2 id="sign-in-title">Demo access</h2>
+          <p>This prototype does not authenticate identities or protect personal data. Use sample information only.</p>
+          <button class="button button-primary demo-sign-in" type="button">Start local demo</button>
+          ${session.message ? `<p class="storage-message" role="alert">${escapeHtml(session.message)}</p>` : ""}
+        </section>
+      </main>
+    `;
+    root.querySelector<HTMLButtonElement>(".demo-sign-in")?.addEventListener("click", () => {
+      demoSessionStore.startDemoSession();
+    });
+    return;
+  }
+
   const state = courseSelectionStore.getState();
+  const careerGoal = careerGoalStore.getState();
   const selectedIds = new Set(state.completedCourseIds);
   const availableCourses = courses.filter((course) => !selectedIds.has(course.id));
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -61,6 +137,18 @@ function render(focusTarget?: string): void {
     draftCourse?.skillIds
       .map((skillId) => skillsById.get(skillId))
       .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill)) ?? [];
+  const targetSkills =
+    careerGoal.selectedRoadmap?.skillIds
+      .map((skillId) => skillsById.get(skillId))
+      .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill)) ?? [];
+  const careerGoalPrompt =
+    !careerGoal.selectedRoadmapId && !careerGoal.selectedEmployerId
+      ? "Choose a career roadmap and a Charlotte employer to set your goal."
+      : !careerGoal.selectedRoadmapId
+        ? "Choose a career roadmap to complete your goal."
+        : !careerGoal.selectedEmployerId
+          ? "Choose a Charlotte employer to complete your goal."
+          : "";
   const searchHelp =
     courses.length === 0
       ? "No supported courses are available in this demo yet."
@@ -85,9 +173,12 @@ function render(focusTarget?: string): void {
       <header class="panel-heading">
         <div>
           <h1 id="page-title">Add what you already know</h1>
-          <p>Build your Backend Developer starting point.</p>
+          <p>Add completed courses and choose a career goal.</p>
         </div>
-        <span class="demo-badge">Local demo</span>
+        <div class="session-controls">
+          <span class="demo-badge">Local demo session</span>
+          <button class="text-button sign-out-button" type="button">Sign out</button>
+        </div>
       </header>
 
       <nav class="entry-tabs" aria-label="Experience type">
@@ -241,19 +332,101 @@ function render(focusTarget?: string): void {
         }
       </section>
 
+      <section class="career-goal" aria-labelledby="career-goal-title">
+        <div class="career-goal-heading">
+          <h2 id="career-goal-title">Choose your career goal</h2>
+          <p>Pick a roadmap and a Charlotte employer to define your target profile.</p>
+        </div>
+        <div class="goal-fields">
+          <div class="field">
+            <label for="career-roadmap">Career roadmap</label>
+            <select
+              id="career-roadmap"
+              data-focus-target="career-roadmap"
+              aria-describedby="career-goal-prompt"
+            >
+              <option value="">Select a roadmap</option>
+              ${careerRoadmaps
+                .map(
+                  (roadmap) => `
+                    <option
+                      value="${escapeHtml(roadmap.id)}"
+                      ${careerGoal.selectedRoadmapId === roadmap.id ? "selected" : ""}
+                    >
+                      ${escapeHtml(roadmap.name)}
+                    </option>`,
+                )
+                .join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label for="career-employer">Charlotte employer</label>
+            <select
+              id="career-employer"
+              data-focus-target="career-employer"
+              aria-describedby="career-goal-prompt"
+            >
+              <option value="">Select an employer</option>
+              ${employerProfiles
+                .map(
+                  (employer) => `
+                    <option
+                      value="${escapeHtml(employer.id)}"
+                      ${careerGoal.selectedEmployerId === employer.id ? "selected" : ""}
+                    >
+                      ${escapeHtml(employer.name)}
+                    </option>`,
+                )
+                .join("")}
+            </select>
+          </div>
+        </div>
+        ${
+          careerGoalPrompt
+            ? `<p id="career-goal-prompt" class="goal-prompt" role="status">${escapeHtml(careerGoalPrompt)}</p>`
+            : `<p id="career-goal-prompt" class="sr-only" role="status">Career goal selected.</p>`
+        }
+        ${
+          careerGoal.targetProfile && careerGoal.selectedRoadmap && careerGoal.selectedEmployer
+            ? `<div class="goal-summary" aria-live="polite">
+                <p class="goal-summary-label">Current goal</p>
+                <h3>${escapeHtml(careerGoal.selectedRoadmap.name)} · ${escapeHtml(careerGoal.selectedEmployer.name)}</h3>
+                <p class="goal-employer-details">
+                  ${escapeHtml(careerGoal.selectedEmployer.industry)} · ${escapeHtml(careerGoal.selectedEmployer.location)}
+                </p>
+                <h4>Roadmap skill targets</h4>
+                ${
+                  targetSkills.length > 0
+                    ? `<ul class="skill-tags goal-skill-tags" aria-label="Target skills for ${escapeHtml(careerGoal.selectedRoadmap.name)}">
+                        ${targetSkills.map((skill) => `<li>${escapeHtml(skill.name)}</li>`).join("")}
+                      </ul>`
+                    : `<p class="goal-prompt">No target skills are currently mapped to this roadmap.</p>`
+                }
+              </div>`
+            : ""
+        }
+          ${
+            careerGoal.targetProfile
+              ? `<p class="goal-status" aria-live="polite">${escapeHtml(getCareerGoalAnnouncementText(careerGoal))}</p>`
+              : ""
+          }
+        <p class="goal-demo-note">
+          Employer profiles and target skill mappings are illustrative local-demo data.
+        </p>
+      </section>
+
       <button class="button button-primary save-button" type="button">
-        Save and continue →
+        Check save status
       </button>
 
       <p class="disclaimer">
         Coursework suggests exposure, not verified mastery. Course availability and
         requirements must be checked in the official catalog.
       </p>
-      ${
-        state.persistenceMessage
-          ? `<p class="storage-message" role="status">${escapeHtml(state.persistenceMessage)}</p>`
-          : ""
-      }
+      ${[session.message, state.persistenceMessage, careerGoal.persistenceMessage]
+        .filter((message): message is string => message !== null)
+        .map((message) => `<p class="storage-message" role="status">${escapeHtml(message)}</p>`)
+        .join("")}
     </main>
   `;
 
@@ -301,6 +474,32 @@ function render(focusTarget?: string): void {
     announce(`Added ${course.code} — ${course.title}.`);
   });
 
+  root.querySelector<HTMLSelectElement>("#career-roadmap")?.addEventListener("change", (event) => {
+    const select = event.currentTarget;
+    if (select instanceof HTMLSelectElement) {
+      careerGoalStore.selectRoadmap(select.value || null);
+      const updatedGoal = careerGoalStore.getState();
+      const selectedRoadmap = updatedGoal.selectedRoadmap?.name ?? "selected roadmap";
+      const employerStatus = updatedGoal.selectedEmployer
+        ? ` with ${updatedGoal.selectedEmployer.name} selected.`
+        : ".";
+      announce(`Career roadmap changed to ${selectedRoadmap}${employerStatus}`);
+    }
+  });
+
+  root.querySelector<HTMLSelectElement>("#career-employer")?.addEventListener("change", (event) => {
+    const select = event.currentTarget;
+    if (select instanceof HTMLSelectElement) {
+      careerGoalStore.selectEmployer(select.value || null);
+      const updatedGoal = careerGoalStore.getState();
+      const employerName = updatedGoal.selectedEmployer?.name ?? "selected employer";
+      const roadmapStatus = updatedGoal.selectedRoadmap
+        ? ` for ${updatedGoal.selectedRoadmap.name}.`
+        : ".";
+      announce(`Career employer changed to ${employerName}${roadmapStatus}`);
+    }
+  });
+
   root.querySelectorAll<HTMLButtonElement>("[data-remove-course]").forEach((button) => {
     button.addEventListener("click", () => {
       const courseId = button.dataset.removeCourse;
@@ -315,12 +514,15 @@ function render(focusTarget?: string): void {
   });
 
   root.querySelector<HTMLButtonElement>(".save-button")?.addEventListener("click", () => {
-    announce(
-      state.persistenceMessage ??
-        `${state.completedCourses.length} course${state.completedCourses.length === 1 ? "" : "s"} saved locally.`,
-    );
+    announce(getSaveAnnouncementText(state, careerGoal));
+  });
+
+  root.querySelector<HTMLButtonElement>(".sign-out-button")?.addEventListener("click", () => {
+    demoSessionStore.signOut();
   });
 }
 
 courseSelectionStore.subscribe(() => render("course-search"));
+careerGoalStore.subscribe(() => render());
+demoSessionStore.subscribe(() => render());
 render();
