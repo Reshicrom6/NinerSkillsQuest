@@ -22,13 +22,13 @@
 }
 
 body {
-  min-width: 320px;
   min-height: 100vh;
   margin: 0;
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -48,6 +48,42 @@ input {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+}
+
+.session-controls {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.sign-in-shell {
+  justify-content: center;
+}
+
+.sign-in-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.sign-in-card h2,
+.sign-in-card p {
+  margin: 0;
+}
+
+.sign-in-card h2 {
+  font-size: 15px;
+}
+
+.sign-in-card p {
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .panel-heading h1 {
@@ -143,12 +179,25 @@ input {
   line-height: 1.4;
 }
 
+.field select {
+  width: 100%;
+  min-height: 39px;
+  padding: 9px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--color-text);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .field input::placeholder {
   color: var(--color-muted);
   opacity: 1;
 }
 
 .field input:focus-visible,
+.field select:focus-visible,
 .entry-tab:focus-visible,
 .search-result:focus-visible,
 .button:focus-visible,
@@ -357,6 +406,237 @@ input {
   gap: 8px;
 }
 
+.career-goal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.skill-gap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.learning-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.learning-options h2 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.learning-catalog-note,
+.learning-resource-list {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.learning-resource-list {
+  display: grid;
+  gap: 6px;
+  padding-left: 18px;
+}
+
+.transcript-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.transcript-panel h2 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.transcript-privacy,
+.transcript-message,
+.transcript-drop p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.transcript-privacy {
+  padding: 10px;
+  border-radius: 5px;
+  background: #fff8e8;
+  color: #745a20;
+}
+
+.transcript-picker-label,
+.transcript-candidate label {
+  color: var(--color-text);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.transcript-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: 5px;
+  background: var(--color-surface-soft);
+}
+
+.transcript-candidate-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.transcript-candidate,
+.transcript-excluded {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px;
+  border-radius: 5px;
+  background: #faf9f6;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.transcript-candidate input {
+  margin: 1px 0 0;
+}
+
+.transcript-excluded {
+  flex-direction: column;
+  gap: 3px;
+  color: var(--color-muted);
+}
+
+.transcript-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skill-gap h2,
+.skill-gap h3,
+.skill-gap p {
+  margin: 0;
+}
+
+.skill-gap h2 {
+  font-size: 13px;
+}
+
+.skill-gap h3 {
+  font-size: 11px;
+}
+
+.skill-gap-note {
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.skill-gap-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.career-goal-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.career-goal-heading h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.career-goal-heading p,
+.goal-employer-details,
+.goal-demo-note {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.goal-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.goal-prompt {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.goal-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px;
+  border-radius: 5px;
+  background: #faf9f6;
+}
+
+.goal-summary-label {
+  margin: 0;
+  color: var(--color-green);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.goal-summary h3,
+.goal-summary h4 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.goal-summary h4 {
+  margin-top: 3px;
+  font-size: 11px;
+}
+
+.goal-skill-tags li {
+  background: var(--color-purple-soft);
+  color: var(--color-purple);
+}
+
+.goal-demo-note {
+  font-size: 10px;
+}
+
 .added-skills {
   display: flex;
   flex-direction: column;
@@ -483,5 +763,9 @@ input {
 
   .course-form {
     gap: 20px;
+  }
+
+  .goal-fields {
+    grid-template-columns: 1fr;
   }
 }
