@@ -30,6 +30,13 @@ session, not identity verification or authentication. Use sample information
 only. Sign out to return to the start screen; course and goal data remain in
 this browser and are not isolated by a real account.
 
+Record a project, employment, volunteer, or other experience with a title and
+one or more supported skills. These skills are explicitly self-reported, not
+verified. Edit or remove records at any time; their skills are combined with
+course-mapped skills for the goal comparison, and removing one source does not
+remove skills still supported by another source. Experiences are stored
+separately in browser `localStorage`.
+
 Search the supported demo courses by code or title, choose a result, and select
 **Add course**. Remove individual selections at any time. Mapped skills update
 immediately, are deduplicated across selected courses, and are derived from
@@ -42,9 +49,10 @@ employer profiles in the career goal section. The demo roadmaps are Backend
 Developer and Full-stack Developer; the current goal and roadmap skill
 targets update immediately and persist in `localStorage`. The roadmap and
 employer selectors are keyboard accessible. With a complete goal, the skill
-comparison separates course-mapped target matches from targets not recorded by
-the current course list. Unmatched targets are not treated as proof of missing
-ability. A target skill not recorded by courses can be selected to see a
+comparison separates target matches across recorded courses and self-reported
+experiences from targets not recorded in the inventory. Unmatched targets are
+not treated as proof of missing ability. A target skill not recorded in the
+inventory can be selected to see a
 curated learning resource and a topic to investigate in the official UNC
 Charlotte catalog. Catalog topics are suggestions, not confirmed current
 elective offerings; check the current catalog and prerequisites.
@@ -52,9 +60,8 @@ The optional synthetic transcript sample is parsed in the browser. Review
 course candidates and confirm them before import; only confirmed supported
 course IDs are saved.
 
-The course-entry screen follows the supplied Figma course panel. The project or
-experience tab and in-progress status are shown only as disabled visual context;
-this feature handles completed courses only.
+The course-entry screen follows the supplied Figma course panel. In-progress
+course status remains outside this completed-course demo.
 
 ## Limitations
 

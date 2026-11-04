@@ -1,10 +1,15 @@
-import { courses, skillsById } from "./data/catalog";
+import { courses, skills, skillsById } from "./data/catalog";
 import { careerRoadmaps, employerProfiles } from "./data/careerGoals";
 import { courseCatalogUrl, getLearningOptions } from "./data/learningOptions";
 import { parseTranscriptPdf, type TranscriptCourseCandidate } from "./data/transcript";
 import { careerGoalStore } from "./state/careerGoalStore";
 import { courseSelectionStore } from "./state/courseSelectionStore";
 import { demoSessionStore } from "./state/demoSessionStore";
+import {
+  experienceStore,
+  experienceTypes,
+  type ExperienceValidationErrors,
+} from "./state/experienceStore";
 import { compareTargetSkills } from "./data/skillGap";
 import "./style.css";
 
@@ -27,6 +32,11 @@ let transcriptMessage: string | null = null;
 let transcriptIsParsing = false;
 let transcriptAttempt = 0;
 let transcriptAbortController: AbortController | null = null;
+let experienceTitleDraft = "";
+let experienceTypeDraft = "";
+let experienceSkillDrafts = new Set<string>();
+let editingExperienceId: string | null = null;
+let experienceFormErrors: ExperienceValidationErrors | null = null;
 
 function announce(message: string): void {
   if (announcer) {
@@ -64,21 +74,25 @@ function getCareerGoalAnnouncementText(careerGoal: ReturnType<typeof careerGoalS
 function getSaveAnnouncementText(
   courseState: ReturnType<typeof courseSelectionStore.getState>,
   careerGoal: ReturnType<typeof careerGoalStore.getState>,
+  experienceState: ReturnType<typeof experienceStore.getState>,
 ): string {
   const courseMessage =
     courseState.persistenceMessage ??
     `${courseState.completedCourses.length} course${courseState.completedCourses.length === 1 ? "" : "s"} saved locally.`;
+  const experienceMessage =
+    experienceState.persistenceMessage ??
+    `${experienceState.experiences.length} self-reported experience${experienceState.experiences.length === 1 ? "" : "s"} saved locally.`;
 
   if (!careerGoal.selectedRoadmapId || !careerGoal.selectedEmployerId) {
     const goalPrompt = getCareerGoalAnnouncementText(careerGoal);
-    return `${courseMessage} ${goalPrompt}`;
+    return `${courseMessage} ${experienceMessage} ${goalPrompt}`;
   }
 
   const goalMessage =
     careerGoal.persistenceMessage ??
     `Career goal saved: ${careerGoal.selectedRoadmap?.name ?? "Selected roadmap"} with ${careerGoal.selectedEmployer?.name ?? "Selected employer"}.`;
 
-  return `${courseMessage} ${goalMessage}`;
+  return `${courseMessage} ${experienceMessage} ${goalMessage}`;
 }
 
 function escapeHtml(value: string): string {
@@ -177,6 +191,14 @@ function render(focusTarget?: string): void {
 
   const state = courseSelectionStore.getState();
   const careerGoal = careerGoalStore.getState();
+  const experienceState = experienceStore.getState();
+  const experienceErrorMessages = experienceFormErrors
+    ? Object.values(experienceFormErrors).filter((message): message is string => Boolean(message))
+    : [];
+  const recordedSkillIds = [...new Set([
+    ...state.skills.map((skill) => skill.id),
+    ...experienceState.skills.map((skill) => skill.id),
+  ])];
   const selectedIds = new Set(state.completedCourseIds);
   const availableCourses = courses.filter((course) => !selectedIds.has(course.id));
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -207,7 +229,7 @@ function render(focusTarget?: string): void {
       .map((skillId) => skillsById.get(skillId))
       .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill)) ?? [];
   const skillComparison = compareTargetSkills(
-    state.skills.map((skill) => skill.id),
+    recordedSkillIds,
     careerGoal.targetProfile?.skillIds ?? null,
   );
   const getSkillNames = (skillIds: string[]) =>
@@ -250,25 +272,13 @@ function render(focusTarget?: string): void {
       <header class="panel-heading">
         <div>
           <h1 id="page-title">Add what you already know</h1>
-          <p>Add completed courses and choose a career goal.</p>
+          <p>Add completed courses or self-reported experiences, then choose a career goal.</p>
         </div>
         <div class="session-controls">
           <span class="demo-badge">Local demo session</span>
           <button class="text-button sign-out-button" type="button">Sign out</button>
         </div>
       </header>
-
-      <nav class="entry-tabs" aria-label="Experience type">
-        <button class="entry-tab is-active" type="button" aria-current="page">Course</button>
-        <button
-          class="entry-tab"
-          type="button"
-          disabled
-          aria-label="Project or experience entry is not included in this demo"
-        >
-          Project or experience
-        </button>
-      </nav>
 
       <form id="course-form" class="course-form">
         <div class="field search-field">
@@ -406,6 +416,128 @@ function render(focusTarget?: string): void {
             : draftCourse
               ? ""
               : `<p class="mapped-empty">No courses selected yet. Add a supported course to see its mapped skills.</p>`
+        }
+      </section>
+
+      <section class="experience-panel" aria-labelledby="experience-panel-title">
+        <h2 id="experience-panel-title">Record a custom experience</h2>
+        <p class="experience-note">Skills you add here are labeled self-reported and are not independently verified.</p>
+        ${
+          experienceState.experiences.length > 0
+            ? `<ul class="experience-list">
+                ${experienceState.experiences
+                  .map((experience) => `
+                    <li class="experience-card">
+                      <div class="experience-card-copy">
+                        <h3>${escapeHtml(experience.title)}</h3>
+                        <p>${escapeHtml(experience.type)} · Self-reported</p>
+                        <ul class="skill-tags" aria-label="Self-reported skills">
+                          ${experience.skillIds
+                            .map((skillId) => skillsById.get(skillId)?.name)
+                            .filter((name): name is string => Boolean(name))
+                            .map((name) => `<li>${escapeHtml(name)}</li>`)
+                            .join("")}
+                        </ul>
+                      </div>
+                      <div class="experience-card-actions">
+                        <button
+                          class="text-button"
+                          type="button"
+                          data-edit-experience="${escapeHtml(experience.id)}"
+                          aria-label="Edit ${escapeHtml(experience.title)}"
+                        >Edit</button>
+                        <button
+                          class="text-button"
+                          type="button"
+                          data-remove-experience="${escapeHtml(experience.id)}"
+                          aria-label="Remove ${escapeHtml(experience.title)}"
+                        >Remove</button>
+                      </div>
+                    </li>`)
+                  .join("")}
+              </ul>`
+            : `<p class="mapped-empty">No custom experiences recorded yet.</p>`
+        }
+        <form id="experience-form" class="experience-form" novalidate>
+          <div class="field">
+            <label for="experience-title">Experience title</label>
+            <input
+              id="experience-title"
+              data-focus-target="experience-title"
+              type="text"
+              maxlength="100"
+              value="${escapeHtml(experienceTitleDraft)}"
+              aria-invalid="${experienceFormErrors?.title ? "true" : "false"}"
+              ${experienceFormErrors?.title ? 'aria-describedby="experience-title-error"' : ""}
+            />
+            ${
+              experienceFormErrors?.title
+                ? `<p id="experience-title-error" class="field-error" role="alert">${escapeHtml(experienceFormErrors.title)}</p>`
+                : ""
+            }
+          </div>
+          <div class="field">
+            <label for="experience-type">Experience type</label>
+            <select
+              id="experience-type"
+              aria-invalid="${experienceFormErrors?.type ? "true" : "false"}"
+              ${experienceFormErrors?.type ? 'aria-describedby="experience-type-error"' : ""}
+            >
+              <option value="">Select a type</option>
+              ${experienceTypes
+                .map((type) => `<option value="${type}" ${experienceTypeDraft === type ? "selected" : ""}>${type}</option>`)
+                .join("")}
+            </select>
+            ${
+              experienceFormErrors?.type
+                ? `<p id="experience-type-error" class="field-error" role="alert">${escapeHtml(experienceFormErrors.type)}</p>`
+                : ""
+            }
+          </div>
+          <fieldset class="experience-skills">
+            <legend>Skills represented by this experience</legend>
+            <div class="experience-skill-options">
+              ${skills
+                .map((skill, index) => {
+                  const checkboxId = `experience-skill-${index}`;
+                  return `<div class="experience-skill-option">
+                    <input
+                      id="${checkboxId}"
+                      type="checkbox"
+                      data-experience-skill="${escapeHtml(skill.id)}"
+                      ${experienceSkillDrafts.has(skill.id) ? "checked" : ""}
+                    />
+                    <label for="${checkboxId}">${escapeHtml(skill.name)}</label>
+                  </div>`;
+                })
+                .join("")}
+            </div>
+            ${
+              experienceFormErrors?.skillIds
+                ? `<p class="field-error" role="alert">${escapeHtml(experienceFormErrors.skillIds)}</p>`
+                : ""
+            }
+          </fieldset>
+          <div class="experience-form-actions">
+            <button class="button button-secondary" type="submit">
+              ${editingExperienceId ? "Save changes" : "Add experience"}
+            </button>
+            ${
+              editingExperienceId
+                ? `<button class="text-button cancel-experience-edit" type="button">Cancel edit</button>`
+                : ""
+            }
+          </div>
+        </form>
+        ${
+          experienceState.persistenceMessage
+            ? `<p class="storage-message" role="status">${escapeHtml(experienceState.persistenceMessage)}</p>`
+            : ""
+        }
+        ${
+          experienceErrorMessages.length > 0
+            ? `<p class="sr-only" role="status">${experienceErrorMessages.map(escapeHtml).join(" ")}</p>`
+            : ""
         }
       </section>
 
@@ -564,7 +696,7 @@ function render(focusTarget?: string): void {
               ? `<p class="goal-prompt">This career goal has no target skills to compare yet.</p>`
               : `
                 <p class="skill-gap-note">
-                  Course mappings show possible exposure only. A target skill not recorded here does not mean you lack it.
+                  Course mappings and self-reported experiences indicate possible exposure only. A target skill not recorded here does not mean you lack it.
                 </p>
                 <div class="skill-gap-group">
                   <h3>Matches · ${skillComparison.matchedSkillIds.length}</h3>
@@ -573,17 +705,17 @@ function render(focusTarget?: string): void {
                       ? `<ul class="skill-tags" aria-label="Target skills matched by recorded courses">
                           ${getSkillNames(skillComparison.matchedSkillIds).map((name) => `<li>${escapeHtml(name)}</li>`).join("")}
                         </ul>`
-                      : `<p class="mapped-empty">No target skills match the currently recorded course skills.</p>`
+                        : `<p class="mapped-empty">No target skills match the currently recorded inventory.</p>`
                   }
                 </div>
                 <div class="skill-gap-group">
-                  <h3>Not recorded from courses · ${skillComparison.unmatchedTargetSkillIds.length}</h3>
+                    <h3>Not recorded in this inventory · ${skillComparison.unmatchedTargetSkillIds.length}</h3>
                   ${
                     skillComparison.unmatchedTargetSkillIds.length > 0
-                      ? `<ul class="skill-tags goal-skill-tags" aria-label="Target skills not recorded from courses">
+                        ? `<ul class="skill-tags goal-skill-tags" aria-label="Target skills not recorded in this inventory">
                           ${getSkillNames(skillComparison.unmatchedTargetSkillIds).map((name) => `<li>${escapeHtml(name)}</li>`).join("")}
                         </ul>`
-                      : `<p class="mapped-empty">Every target skill is represented in the current course mappings.</p>`
+                        : `<p class="mapped-empty">Every target skill is represented in the current inventory.</p>`
                   }
                 </div>
               `
@@ -594,12 +726,12 @@ function render(focusTarget?: string): void {
         <h2 id="learning-options-title">Explore learning options</h2>
         ${
           skillComparison.status !== "ready"
-            ? `<p class="goal-prompt">Choose a complete career goal before exploring options for target skills not recorded from courses.</p>`
+            ? `<p class="goal-prompt">Choose a complete career goal before exploring options for target skills not recorded in this inventory.</p>`
             : skillComparison.unmatchedTargetSkillIds.length === 0
-              ? `<p class="mapped-empty">There are no target skills currently unmatched by the course list.</p>`
+              ? `<p class="mapped-empty">There are no target skills currently unmatched by the inventory.</p>`
               : `
                 <div class="field">
-                  <label for="learning-skill">Choose a target skill not recorded from courses</label>
+                  <label for="learning-skill">Choose a target skill not recorded in this inventory</label>
                   <select id="learning-skill" data-focus-target="learning-skill">
                     <option value="">Select a skill</option>
                     ${skillComparison.unmatchedTargetSkillIds
@@ -653,7 +785,7 @@ function render(focusTarget?: string): void {
         Coursework suggests exposure, not verified mastery. Course availability and
         requirements must be checked in the official catalog.
       </p>
-      ${[session.message, state.persistenceMessage, careerGoal.persistenceMessage]
+      ${[session.message, state.persistenceMessage, careerGoal.persistenceMessage, experienceState.persistenceMessage]
         .filter((message): message is string => message !== null)
         .map((message) => `<p class="storage-message" role="status">${escapeHtml(message)}</p>`)
         .join("")}
@@ -814,6 +946,104 @@ function render(focusTarget?: string): void {
     }
   });
 
+  root.querySelector<HTMLInputElement>("#experience-title")?.addEventListener("input", (event) => {
+    const input = event.currentTarget;
+    if (input instanceof HTMLInputElement) {
+      experienceTitleDraft = input.value;
+    }
+  });
+
+  root.querySelector<HTMLSelectElement>("#experience-type")?.addEventListener("change", (event) => {
+    const select = event.currentTarget;
+    if (select instanceof HTMLSelectElement) {
+      experienceTypeDraft = select.value;
+    }
+  });
+
+  root.querySelectorAll<HTMLInputElement>("[data-experience-skill]").forEach((checkbox) => {
+    checkbox.addEventListener("change", () => {
+      const skillId = checkbox.dataset.experienceSkill;
+      if (!skillId) {
+        return;
+      }
+      if (checkbox.checked) {
+        experienceSkillDrafts.add(skillId);
+      } else {
+        experienceSkillDrafts.delete(skillId);
+      }
+    });
+  });
+
+  root.querySelector<HTMLFormElement>("#experience-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const draft = {
+      title: experienceTitleDraft,
+      type: experienceTypeDraft,
+      skillIds: [...experienceSkillDrafts],
+    };
+    const result = editingExperienceId
+      ? experienceStore.updateExperience(editingExperienceId, draft)
+      : experienceStore.addExperience(draft);
+
+    if (!result.ok) {
+      experienceFormErrors = result.errors;
+      render("experience-title");
+      return;
+    }
+
+    const wasEditing = editingExperienceId !== null;
+    experienceTitleDraft = "";
+    experienceTypeDraft = "";
+    experienceSkillDrafts = new Set();
+    editingExperienceId = null;
+    experienceFormErrors = null;
+    announce(`${wasEditing ? "Updated" : "Added"} self-reported experience: ${result.record.title}.`);
+    render();
+  });
+
+  root.querySelectorAll<HTMLButtonElement>("[data-edit-experience]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const experienceId = button.dataset.editExperience;
+      const experience = experienceState.experiences.find((item) => item.id === experienceId);
+      if (!experience) {
+        return;
+      }
+      editingExperienceId = experience.id;
+      experienceTitleDraft = experience.title;
+      experienceTypeDraft = experience.type;
+      experienceSkillDrafts = new Set(experience.skillIds);
+      experienceFormErrors = null;
+      render("experience-title");
+    });
+  });
+
+  root.querySelectorAll<HTMLButtonElement>("[data-remove-experience]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const experienceId = button.dataset.removeExperience;
+      if (!experienceId || !experienceStore.removeExperience(experienceId)) {
+        return;
+      }
+      if (editingExperienceId === experienceId) {
+        editingExperienceId = null;
+        experienceTitleDraft = "";
+        experienceTypeDraft = "";
+        experienceSkillDrafts = new Set();
+      }
+      experienceFormErrors = null;
+      announce("Removed custom experience. Skills supported by other sources remain in the inventory.");
+      render();
+    });
+  });
+
+  root.querySelector<HTMLButtonElement>(".cancel-experience-edit")?.addEventListener("click", () => {
+    editingExperienceId = null;
+    experienceTitleDraft = "";
+    experienceTypeDraft = "";
+    experienceSkillDrafts = new Set();
+    experienceFormErrors = null;
+    render();
+  });
+
   root.querySelectorAll<HTMLButtonElement>("[data-remove-course]").forEach((button) => {
     button.addEventListener("click", () => {
       const courseId = button.dataset.removeCourse;
@@ -828,7 +1058,7 @@ function render(focusTarget?: string): void {
   });
 
   root.querySelector<HTMLButtonElement>(".save-button")?.addEventListener("click", () => {
-    announce(getSaveAnnouncementText(state, careerGoal));
+      announce(getSaveAnnouncementText(state, careerGoal, experienceState));
   });
 
   root.querySelector<HTMLButtonElement>(".sign-out-button")?.addEventListener("click", () => {
@@ -839,4 +1069,5 @@ function render(focusTarget?: string): void {
 courseSelectionStore.subscribe(() => render("course-search"));
 careerGoalStore.subscribe(() => render());
 demoSessionStore.subscribe(() => render());
+experienceStore.subscribe(() => render());
 render();

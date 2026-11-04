@@ -114,38 +114,6 @@ select {
   white-space: nowrap;
 }
 
-.entry-tabs {
-  display: flex;
-  gap: 6px;
-  padding: 4px;
-  border-radius: 6px;
-  background: var(--color-surface-soft);
-}
-
-.entry-tab {
-  min-width: 0;
-  min-height: 32px;
-  flex: 1;
-  padding: 8px;
-  border: 0;
-  border-radius: 4px;
-  background: transparent;
-  color: var(--color-muted);
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.entry-tab.is-active {
-  background: #fff;
-  color: #02542d;
-  font-weight: 700;
-}
-
-.entry-tab:disabled {
-  cursor: not-allowed;
-  opacity: 1;
-}
-
 .course-form {
   display: flex;
   flex-direction: column;
@@ -198,7 +166,6 @@ select {
 
 .field input:focus-visible,
 .field select:focus-visible,
-.entry-tab:focus-visible,
 .search-result:focus-visible,
 .button:focus-visible,
 .text-button:focus-visible {
@@ -451,6 +418,130 @@ select {
   display: grid;
   gap: 6px;
   padding-left: 18px;
+}
+
+.experience-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.experience-panel h2,
+.experience-panel h3,
+.experience-panel p {
+  margin: 0;
+}
+
+.experience-panel h2 {
+  font-size: 13px;
+}
+
+.experience-note {
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.experience-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.experience-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 5px;
+  background: #faf9f6;
+}
+
+.experience-card-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.experience-card h3 {
+  font-size: 12px;
+}
+
+.experience-card p {
+  color: var(--color-muted);
+  font-size: 10px;
+}
+
+.experience-card-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.experience-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.experience-skills {
+  min-width: 0;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+}
+
+.experience-skills legend {
+  padding: 0 4px;
+  color: var(--color-text);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.experience-skill-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.experience-skill-option {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.experience-skill-option input {
+  flex: 0 0 auto;
+  margin: 2px 0 0;
+}
+
+.experience-skill-option label {
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.field-error {
+  margin: 0;
+  color: #9c2c2c;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.experience-form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .transcript-panel {
