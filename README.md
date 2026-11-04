@@ -64,7 +64,8 @@ employer profiles are fictional demo data, not verified hiring requirements or
 employer endorsements. The demo session does not authenticate users or isolate
 one student's data from another. Transcript upload and backend services are not
 included. Transcript parsing supports only the bundled synthetic sample format;
-do not upload a real transcript or personal information.
+do not upload a real transcript or personal information. Cancel or discard a
+transcript preview before confirmation to leave saved coursework unchanged.
 
 ## AI-use disclosure
 

@@ -26,6 +26,7 @@ let selectedTranscriptCourseIds = new Set<string>();
 let transcriptMessage: string | null = null;
 let transcriptIsParsing = false;
 let transcriptAttempt = 0;
+let transcriptAbortController: AbortController | null = null;
 
 function announce(message: string): void {
   if (announcer) {
@@ -94,7 +95,10 @@ function escapeHtml(value: string): string {
 }
 
 async function reviewTranscript(file: File): Promise<void> {
+  transcriptAbortController?.abort();
   const attempt = ++transcriptAttempt;
+  const abortController = new AbortController();
+  transcriptAbortController = abortController;
   transcriptCandidates = [];
   selectedTranscriptCourseIds = new Set();
   transcriptMessage = "Reading this PDF in your browser. Nothing has been saved.";
@@ -102,7 +106,7 @@ async function reviewTranscript(file: File): Promise<void> {
   render();
 
   try {
-    const candidates = await parseTranscriptPdf(file, courses);
+    const candidates = await parseTranscriptPdf(file, courses, abortController.signal);
     if (attempt !== transcriptAttempt) {
       return;
     }
@@ -128,12 +132,15 @@ async function reviewTranscript(file: File): Promise<void> {
   } finally {
     if (attempt === transcriptAttempt) {
       transcriptIsParsing = false;
+      transcriptAbortController = null;
       render();
     }
   }
 }
 
 function discardTranscriptReview(): void {
+  transcriptAbortController?.abort();
+  transcriptAbortController = null;
   transcriptAttempt += 1;
   transcriptCandidates = [];
   selectedTranscriptCourseIds = new Set();
@@ -415,6 +422,11 @@ function render(focusTarget?: string): void {
           <button class="text-button sample-transcript-button" type="button" ${transcriptIsParsing ? "disabled" : ""}>
             Load synthetic sample PDF
           </button>
+          ${
+            transcriptIsParsing
+              ? `<button class="text-button cancel-transcript" type="button">Cancel parsing</button>`
+              : ""
+          }
         </div>
         ${
           transcriptMessage
@@ -733,6 +745,10 @@ function render(focusTarget?: string): void {
   });
 
   root.querySelector<HTMLButtonElement>(".discard-transcript")?.addEventListener("click", () => {
+    discardTranscriptReview();
+  });
+
+  root.querySelector<HTMLButtonElement>(".cancel-transcript")?.addEventListener("click", () => {
     discardTranscriptReview();
   });
 

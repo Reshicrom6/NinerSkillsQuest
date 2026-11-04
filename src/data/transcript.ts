@@ -78,6 +78,7 @@ export function parseTranscriptText(
 export async function parseTranscriptPdf(
   file: File,
   catalog: readonly Course[],
+  signal?: AbortSignal,
 ): Promise<TranscriptCourseCandidate[]> {
   if (file.size === 0) {
     throw new Error("The selected PDF is empty.");
@@ -94,15 +95,30 @@ export async function parseTranscriptPdf(
 
   const bytes = new Uint8Array(await file.arrayBuffer());
   let loadingTask: ReturnType<typeof pdfjsLib.getDocument> | null = null;
+  let destroyPromise: Promise<void> | null = null;
+  let destroyError: unknown = null;
+  const destroyDocument = () => {
+    destroyPromise ??= loadingTask?.destroy() ?? Promise.resolve();
+    return destroyPromise;
+  };
+  const abortParsing = () => {
+    void destroyDocument().catch((error: unknown) => {
+      destroyError = error;
+    });
+  };
   try {
     loadingTask = pdfjsLib.getDocument({ data: bytes.slice(), isEvalSupported: false });
+    signal?.addEventListener("abort", abortParsing, { once: true });
+    signal?.throwIfAborted();
     const document = await loadingTask.promise;
+    signal?.throwIfAborted();
     if (document.numPages > MAX_PAGE_COUNT) {
       throw new Error("The PDF exceeds the 20-page demo limit.");
     }
     const textParts: string[] = [];
     for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
       const page = await document.getPage(pageNumber);
+      signal?.throwIfAborted();
       const content = await page.getTextContent();
       textParts.push(
         content.items
@@ -113,7 +129,11 @@ export async function parseTranscriptPdf(
     }
     return parseTranscriptText(textParts.join(" "), catalog);
   } finally {
+    signal?.removeEventListener("abort", abortParsing);
     bytes.fill(0);
-    await loadingTask?.destroy();
+    await destroyDocument();
+    if (destroyError) {
+      throw new Error("The PDF processing task could not be released.");
+    }
   }
 }
