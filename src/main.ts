@@ -1,5 +1,9 @@
 import { courses, skills, skillsById } from "./data/catalog";
 import { careerRoadmaps, employerProfiles } from "./data/careerGoals";
+import {
+  getItineraryRecommendations,
+  getItinerarySkillNames,
+} from "./data/itinerary";
 import { courseCatalogUrl, getLearningOptions } from "./data/learningOptions";
 import { parseTranscriptPdf, type TranscriptCourseCandidate } from "./data/transcript";
 import { careerGoalStore } from "./state/careerGoalStore";
@@ -10,6 +14,7 @@ import {
   experienceTypes,
   type ExperienceValidationErrors,
 } from "./state/experienceStore";
+import { itineraryStore } from "./state/itineraryStore";
 import { compareTargetSkills } from "./data/skillGap";
 import "./style.css";
 
@@ -75,6 +80,7 @@ function getSaveAnnouncementText(
   courseState: ReturnType<typeof courseSelectionStore.getState>,
   careerGoal: ReturnType<typeof careerGoalStore.getState>,
   experienceState: ReturnType<typeof experienceStore.getState>,
+  itineraryState: ReturnType<typeof itineraryStore.getState>,
 ): string {
   const courseMessage =
     courseState.persistenceMessage ??
@@ -82,17 +88,20 @@ function getSaveAnnouncementText(
   const experienceMessage =
     experienceState.persistenceMessage ??
     `${experienceState.experiences.length} self-reported experience${experienceState.experiences.length === 1 ? "" : "s"} saved locally.`;
+  const itineraryMessage =
+    itineraryState.persistenceMessage ??
+    `${itineraryState.activities.length} itinerary ${itineraryState.activities.length === 1 ? "activity" : "activities"} saved in this browser.`;
 
   if (!careerGoal.selectedRoadmapId || !careerGoal.selectedEmployerId) {
     const goalPrompt = getCareerGoalAnnouncementText(careerGoal);
-    return `${courseMessage} ${experienceMessage} ${goalPrompt}`;
+    return `${courseMessage} ${experienceMessage} ${itineraryMessage} ${goalPrompt}`;
   }
 
   const goalMessage =
     careerGoal.persistenceMessage ??
     `Career goal saved: ${careerGoal.selectedRoadmap?.name ?? "Selected roadmap"} with ${careerGoal.selectedEmployer?.name ?? "Selected employer"}.`;
 
-  return `${courseMessage} ${experienceMessage} ${goalMessage}`;
+  return `${courseMessage} ${experienceMessage} ${itineraryMessage} ${goalMessage}`;
 }
 
 function escapeHtml(value: string): string {
@@ -192,6 +201,10 @@ function render(focusTarget?: string): void {
   const state = courseSelectionStore.getState();
   const careerGoal = careerGoalStore.getState();
   const experienceState = experienceStore.getState();
+  const itineraryState = itineraryStore.getState();
+  const savedItineraryIds = new Set(
+    itineraryState.activities.map((activity) => activity.id),
+  );
   const experienceErrorMessages = experienceFormErrors
     ? Object.values(experienceFormErrors).filter((message): message is string => Boolean(message))
     : [];
@@ -240,6 +253,9 @@ function render(focusTarget?: string): void {
   const selectedLearningOptions = selectedLearningSkillId
     ? getLearningOptions(selectedLearningSkillId)
     : null;
+  const recommendedItineraryActivities = selectedLearningSkillId
+    ? getItineraryRecommendations(selectedLearningSkillId, state.completedCourseIds)
+    : [];
   const careerGoalPrompt =
     !careerGoal.selectedRoadmapId && !careerGoal.selectedEmployerId
       ? "Choose a career roadmap and a Charlotte employer to set your goal."
@@ -755,25 +771,88 @@ function render(focusTarget?: string): void {
                               </p>`
                             : ""
                         }
+                      `
+                      : ""
+                    : ""
+                }
+                ${
+                  selectedLearningSkillId
+                    ? `<div class="itinerary-recommendations">
+                        <h3>Recommendations for ${escapeHtml(getItinerarySkillNames([selectedLearningSkillId]))}</h3>
                         ${
-                          selectedLearningOptions.resources.length > 0
-                            ? `<ul class="learning-resource-list">
-                                ${selectedLearningOptions.resources
-                                  .map((resource) => `
-                                    <li>
-                                      <a href="${escapeHtml(resource.url)}" target="_blank" rel="noopener noreferrer">
-                                        ${escapeHtml(resource.title)}
-                                      </a>
+                          recommendedItineraryActivities.length > 0
+                            ? `<ul class="itinerary-recommendation-list">
+                                ${recommendedItineraryActivities
+                                  .map((activity) => `
+                                    <li class="itinerary-recommendation">
+                                      <div class="itinerary-recommendation-copy">
+                                        <h4>${escapeHtml(activity.name)}</h4>
+                                        <p>${escapeHtml(activity.type)} · ${escapeHtml(getItinerarySkillNames(activity.skillIds))}</p>
+                                        ${
+                                          activity.resourceUrl
+                                            ? `<a href="${escapeHtml(activity.resourceUrl)}" target="_blank" rel="noopener noreferrer">
+                                                ${activity.type === "Course" ? "Check official catalog" : "Open resource"}
+                                              </a>`
+                                            : `<span class="activity-no-link">No resource link provided.</span>`
+                                        }
+                                      </div>
+                                      <button
+                                        class="button button-secondary"
+                                        type="button"
+                                        data-save-itinerary="${escapeHtml(activity.id)}"
+                                        ${savedItineraryIds.has(activity.id) ? "disabled" : ""}
+                                      >
+                                        ${savedItineraryIds.has(activity.id) ? "Already saved" : "Save to itinerary"}
+                                      </button>
                                     </li>`)
                                   .join("")}
                               </ul>`
-                            : `<p class="mapped-empty">No practice resources are available for this skill yet.</p>`
+                            : `<p class="mapped-empty">No recommendations are available for this skill yet.</p>`
                         }
-                      `
-                      : `<p class="mapped-empty" role="status">No course or practice resources are mapped to this skill yet.</p>`
+                      </div>`
                     : ""
                 }
               `
+        }
+      </section>
+
+      <section class="itinerary-panel" aria-labelledby="itinerary-title">
+        <h2 id="itinerary-title">Your itinerary · ${itineraryState.activities.length}</h2>
+        <p class="itinerary-note">
+          Saved in this browser's local demo only; these activities are not tied to a real account.
+        </p>
+        ${
+          itineraryState.activities.length > 0
+            ? `<ul class="itinerary-list">
+                ${itineraryState.activities
+                  .map((activity) => `
+                    <li class="itinerary-item">
+                      <div class="itinerary-item-copy">
+                        <h3>${escapeHtml(activity.name)}</h3>
+                        <p>${escapeHtml(activity.type)} · ${escapeHtml(getItinerarySkillNames(activity.skillIds))}</p>
+                        ${
+                          activity.resourceUrl
+                            ? `<a href="${escapeHtml(activity.resourceUrl)}" target="_blank" rel="noopener noreferrer">
+                                ${activity.type === "Course" ? "Check official catalog" : "Open resource"}
+                              </a>`
+                            : `<span class="activity-no-link">No resource link provided.</span>`
+                        }
+                      </div>
+                      <button
+                        class="text-button"
+                        type="button"
+                        data-remove-itinerary="${escapeHtml(activity.id)}"
+                        aria-label="Remove ${escapeHtml(activity.name)} from itinerary"
+                      >Remove</button>
+                    </li>`)
+                  .join("")}
+              </ul>`
+            : `<p class="mapped-empty">Save a course, project, or practice resource to reopen it here.</p>`
+        }
+        ${
+          itineraryState.persistenceMessage
+            ? `<p class="storage-message" role="status">${escapeHtml(itineraryState.persistenceMessage)}</p>`
+            : ""
         }
       </section>
 
@@ -946,6 +1025,49 @@ function render(focusTarget?: string): void {
     }
   });
 
+  root.querySelectorAll<HTMLButtonElement>("[data-save-itinerary]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const activityId = button.dataset.saveItinerary;
+      if (!activityId) {
+        return;
+      }
+
+      const result = itineraryStore.addActivity(activityId);
+      if (!result.ok) {
+        announce(
+          result.reason === "duplicate"
+            ? "This activity is already in your itinerary."
+            : "This recommendation is no longer available. Refresh the page and try again.",
+        );
+        return;
+      }
+
+      const persistenceMessage = itineraryStore.getState().persistenceMessage;
+      announce(
+        result.persisted
+          ? `Saved ${result.activity.name} to your itinerary.`
+          : `Added ${result.activity.name} for this session only. ${persistenceMessage ?? "Browser storage is unavailable."}`,
+      );
+    });
+  });
+
+  root.querySelectorAll<HTMLButtonElement>("[data-remove-itinerary]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const activityId = button.dataset.removeItinerary;
+      if (!activityId || !itineraryStore.removeActivity(activityId)) {
+        announce("This itinerary activity is no longer available. Refresh the page.");
+        return;
+      }
+
+      const persistenceMessage = itineraryStore.getState().persistenceMessage;
+      announce(
+        persistenceMessage
+          ? `Removed the activity for this session. ${persistenceMessage}`
+          : "Removed the activity from your itinerary.",
+      );
+    });
+  });
+
   root.querySelector<HTMLInputElement>("#experience-title")?.addEventListener("input", (event) => {
     const input = event.currentTarget;
     if (input instanceof HTMLInputElement) {
@@ -1058,7 +1180,7 @@ function render(focusTarget?: string): void {
   });
 
   root.querySelector<HTMLButtonElement>(".save-button")?.addEventListener("click", () => {
-      announce(getSaveAnnouncementText(state, careerGoal, experienceState));
+      announce(getSaveAnnouncementText(state, careerGoal, experienceState, itineraryState));
   });
 
   root.querySelector<HTMLButtonElement>(".sign-out-button")?.addEventListener("click", () => {
@@ -1070,4 +1192,5 @@ courseSelectionStore.subscribe(() => render("course-search"));
 careerGoalStore.subscribe(() => render());
 demoSessionStore.subscribe(() => render());
 experienceStore.subscribe(() => render());
+itineraryStore.subscribe(() => render());
 render();

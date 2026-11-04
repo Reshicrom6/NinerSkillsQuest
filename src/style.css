@@ -406,18 +406,102 @@ select {
   font-size: 13px;
 }
 
-.learning-catalog-note,
-.learning-resource-list {
+.learning-catalog-note {
   margin: 0;
   color: var(--color-muted);
   font-size: 11px;
   line-height: 1.5;
 }
 
-.learning-resource-list {
+.itinerary-recommendations {
   display: grid;
-  gap: 6px;
-  padding-left: 18px;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+.itinerary-recommendations h3 {
+  margin: 0;
+  font-size: 12px;
+}
+
+.itinerary-recommendation-list,
+.itinerary-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.itinerary-recommendation,
+.itinerary-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  background: #faf9f6;
+}
+
+.itinerary-recommendation {
+  flex-direction: column;
+}
+
+.itinerary-recommendation-copy,
+.itinerary-item-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.itinerary-recommendation h4,
+.itinerary-item h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 11px;
+}
+
+.itinerary-recommendation p,
+.itinerary-item p,
+.itinerary-note,
+.activity-no-link {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.itinerary-recommendation a,
+.itinerary-item a {
+  width: fit-content;
+  color: #02542d;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.itinerary-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.itinerary-panel h2 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.itinerary-item {
+  align-items: center;
+}
+
+.itinerary-item .text-button {
+  flex: 0 0 auto;
 }
 
 .experience-panel {

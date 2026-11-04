@@ -1,9 +1,10 @@
 # Niner Skills Quest
 
-A local demo for selecting completed courses and seeing their suggested skills.
-Students can also choose an illustrative career roadmap and Charlotte employer
-to define a local career goal. Course and roadmap skills represent possible
-exposure or targets, not verified skill mastery.
+A local demo for selecting completed courses, recording self-reported
+experiences, and saving next-step recommendations in an itinerary. Students can
+also choose an illustrative career roadmap and Charlotte employer to define a
+local career goal. Course and roadmap skills represent possible exposure or
+targets, not verified skill mastery.
 
 ## Setup
 
@@ -56,6 +57,11 @@ inventory can be selected to see a
 curated learning resource and a topic to investigate in the official UNC
 Charlotte catalog. Catalog topics are suggestions, not confirmed current
 elective offerings; check the current catalog and prerequisites.
+For each unrecorded target skill, the demo can also show sample course
+recommendations, project ideas, and practice resources. Save any of these to
+**Your itinerary** to see its name, type, related skill, and available link.
+Duplicate saves are prevented; activities can be removed and the remaining
+itinerary reloads from this browser's `localStorage`.
 The optional synthetic transcript sample is parsed in the browser. Review
 course candidates and confirm them before import; only confirmed supported
 course IDs are saved.
@@ -68,19 +74,24 @@ course status remains outside this completed-course demo.
 The course catalog and mappings are illustrative, not official catalog data.
 Coursework suggestions are not verified mastery, and roadmap skill targets and
 employer profiles are fictional demo data, not verified hiring requirements or
-employer endorsements. The demo session does not authenticate users or isolate
-one student's data from another. Transcript upload and backend services are not
+employer endorsements. Itinerary recommendations are illustrative; course links
+lead to the catalog root and do not confirm current offerings. The demo session
+does not authenticate users or isolate one student's data from another; saved
+itineraries are local to this browser and are not tied to an account or synced
+across devices. Server-side transcript processing and backend services are not
 included. Transcript parsing supports only the bundled synthetic sample format;
 do not upload a real transcript or personal information. Cancel or discard a
 transcript preview before confirmation to leave saved coursework unchanged.
 
 ## AI-use disclosure
 
-GitHub Copilot assisted with the course-entry and career-goal implementation,
-tests, and project documentation. Figma MCP was used to access the referenced
-design page and export its screenshot; it did not provide inspectable
-goal-selection layers, so the career-goal UI follows existing application
-patterns and the issue acceptance criteria rather than a verified frame
-specification. The team should review the implementation and all illustrative
-course mappings, roadmap targets, and employer profiles before treating them as
+GitHub Copilot assisted with the course-entry, career-goal, transcript,
+experience, itinerary, test, and documentation work. Figma MCP was used earlier
+to access the referenced course design page and export its screenshot; it did
+not provide inspectable goal-selection layers. Itinerary frame metadata could
+not be inspected because the Figma MCP Starter-plan tool-call limit was
+reached, so that UI follows existing application patterns and the issue
+criteria rather than a verified frame specification. The team should review
+the implementation and all illustrative course mappings, roadmap targets,
+employer profiles, and activity recommendations before treating them as
 authoritative. No teammate review or approval is claimed here.
