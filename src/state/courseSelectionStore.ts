@@ -63,13 +63,22 @@ export class CourseSelectionStore {
   }
 
   addCourse(courseId: string): void {
-    if (!this.courseById.has(courseId) || this.completedCourseIds.includes(courseId)) {
-      return;
+    this.addCourses([courseId]);
+  }
+
+  addCourses(courseIds: readonly string[]): string[] {
+    const existingIds = new Set(this.completedCourseIds);
+    const addedIds = [...new Set(courseIds)].filter(
+      (courseId) => this.courseById.has(courseId) && !existingIds.has(courseId),
+    );
+    if (addedIds.length === 0) {
+      return [];
     }
 
-    this.completedCourseIds = [...this.completedCourseIds, courseId];
+    this.completedCourseIds = [...this.completedCourseIds, ...addedIds];
     this.saveSelections();
     this.notify();
+    return addedIds;
   }
 
   removeCourse(courseId: string): void {
