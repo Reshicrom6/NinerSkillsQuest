@@ -25,6 +25,11 @@ npm test
 
 ## Usage
 
+Select **Start local demo** to open the prototype. This is a browser-local demo
+session, not identity verification or authentication. Use sample information
+only. Sign out to return to the start screen; course and goal data remain in
+this browser and are not isolated by a real account.
+
 Search the supported demo courses by code or title, choose a result, and select
 **Add course**. Remove individual selections at any time. Mapped skills update
 immediately, are deduplicated across selected courses, and are derived from
@@ -47,8 +52,9 @@ this feature handles completed courses only.
 The course catalog and mappings are illustrative, not official catalog data.
 Coursework suggestions are not verified mastery, and roadmap skill targets and
 employer profiles are fictional demo data, not verified hiring requirements or
-employer endorsements. Authentication, transcript upload, and backend services
-are not included.
+employer endorsements. The demo session does not authenticate users or isolate
+one student's data from another. Transcript upload and backend services are not
+included yet.
 
 ## AI-use disclosure
 

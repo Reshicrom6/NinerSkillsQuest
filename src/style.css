@@ -50,6 +50,42 @@ select {
   gap: 12px;
 }
 
+.session-controls {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.sign-in-shell {
+  justify-content: center;
+}
+
+.sign-in-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.sign-in-card h2,
+.sign-in-card p {
+  margin: 0;
+}
+
+.sign-in-card h2 {
+  font-size: 15px;
+}
+
+.sign-in-card p {
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .panel-heading h1 {
   margin: 0 0 4px;
   color: var(--color-text);
