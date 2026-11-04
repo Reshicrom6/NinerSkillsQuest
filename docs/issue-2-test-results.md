@@ -18,6 +18,9 @@ shared roadmap skill IDs.
 
 ## Browser checks
 
+- Saved a 1024 × 900 browser screenshot of the running local demo at
+  [issue-2-demo.png](./issue-2-demo.png), showing the selected Full-stack
+  Developer and demo financial-services employer goal with target skills.
 - Initial page prompts the student to choose both a roadmap and Charlotte employer.
 - Choosing Backend Developer alone prompts for an employer.
 - Choosing a demo employer displays the current goal, employer industry and
