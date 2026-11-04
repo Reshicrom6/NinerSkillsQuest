@@ -23,6 +23,53 @@ function announce(message: string): void {
   }
 }
 
+function getCareerGoalAnnouncementText(careerGoal: ReturnType<typeof careerGoalStore.getState>): string {
+  if (!careerGoal.selectedRoadmapId && !careerGoal.selectedEmployerId) {
+    return "Choose a career roadmap and a Charlotte employer to set your goal.";
+  }
+
+  if (!careerGoal.selectedRoadmapId) {
+    return "Career employer selected. Choose a career roadmap to complete your goal.";
+  }
+
+  if (!careerGoal.selectedEmployerId) {
+    return "Career roadmap selected. Choose a Charlotte employer to complete your goal.";
+  }
+
+  const roadmapName = careerGoal.selectedRoadmap?.name ?? "Selected roadmap";
+  const employerName = careerGoal.selectedEmployer?.name ?? "Selected employer";
+  const targetSkillNames =
+    careerGoal.selectedRoadmap?.skillIds
+      .map((skillId) => skillsById.get(skillId)?.name)
+      .filter((skillName): skillName is string => Boolean(skillName)) ?? [];
+
+  if (targetSkillNames.length === 0) {
+    return `Career goal set to ${roadmapName} with ${employerName}. No target skills are mapped to this roadmap.`;
+  }
+
+  return `Career goal set to ${roadmapName} with ${employerName}. Target skills: ${targetSkillNames.join(", ")}.`;
+}
+
+function getSaveAnnouncementText(
+  courseState: ReturnType<typeof courseSelectionStore.getState>,
+  careerGoal: ReturnType<typeof careerGoalStore.getState>,
+): string {
+  const courseMessage =
+    courseState.persistenceMessage ??
+    `${courseState.completedCourses.length} course${courseState.completedCourses.length === 1 ? "" : "s"} saved locally.`;
+
+  if (!careerGoal.selectedRoadmapId || !careerGoal.selectedEmployerId) {
+    const goalPrompt = getCareerGoalAnnouncementText(careerGoal);
+    return `${courseMessage} ${goalPrompt}`;
+  }
+
+  const goalMessage =
+    careerGoal.persistenceMessage ??
+    `Career goal saved: ${careerGoal.selectedRoadmap?.name ?? "Selected roadmap"} with ${careerGoal.selectedEmployer?.name ?? "Selected employer"}.`;
+
+  return `${courseMessage} ${goalMessage}`;
+}
+
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => {
     const entities: Record<string, string> = {
@@ -329,6 +376,11 @@ function render(focusTarget?: string): void {
               </div>`
             : ""
         }
+          ${
+            careerGoal.targetProfile
+              ? `<p class="goal-status" aria-live="polite">${escapeHtml(getCareerGoalAnnouncementText(careerGoal))}</p>`
+              : ""
+          }
         <p class="goal-demo-note">
           Employer profiles and target skill mappings are illustrative local-demo data.
         </p>
@@ -397,6 +449,12 @@ function render(focusTarget?: string): void {
     const select = event.currentTarget;
     if (select instanceof HTMLSelectElement) {
       careerGoalStore.selectRoadmap(select.value || null);
+      const updatedGoal = careerGoalStore.getState();
+      const selectedRoadmap = updatedGoal.selectedRoadmap?.name ?? "selected roadmap";
+      const employerStatus = updatedGoal.selectedEmployer
+        ? ` with ${updatedGoal.selectedEmployer.name} selected.`
+        : ".";
+      announce(`Career roadmap changed to ${selectedRoadmap}${employerStatus}`);
     }
   });
 
@@ -404,6 +462,12 @@ function render(focusTarget?: string): void {
     const select = event.currentTarget;
     if (select instanceof HTMLSelectElement) {
       careerGoalStore.selectEmployer(select.value || null);
+      const updatedGoal = careerGoalStore.getState();
+      const employerName = updatedGoal.selectedEmployer?.name ?? "selected employer";
+      const roadmapStatus = updatedGoal.selectedRoadmap
+        ? ` for ${updatedGoal.selectedRoadmap.name}.`
+        : ".";
+      announce(`Career employer changed to ${employerName}${roadmapStatus}`);
     }
   });
 
@@ -421,10 +485,7 @@ function render(focusTarget?: string): void {
   });
 
   root.querySelector<HTMLButtonElement>(".save-button")?.addEventListener("click", () => {
-    announce(
-      state.persistenceMessage ??
-        `${state.completedCourses.length} course${state.completedCourses.length === 1 ? "" : "s"} saved locally.`,
-    );
+    announce(getSaveAnnouncementText(state, careerGoal));
   });
 }
 
