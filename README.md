@@ -5,7 +5,7 @@ Coursework suggestions represent possible exposure, not verified skill mastery.
 
 ## Setup
 
-Requires Node.js 20.19+ or 22.12+.
+Requires Node.js 22.12+.
 
 ```sh
 npm install

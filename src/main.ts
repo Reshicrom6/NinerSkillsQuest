@@ -38,10 +38,10 @@ function render(focusTarget?: string): void {
   const state = courseSelectionStore.getState();
   const selectedIds = new Set(state.completedCourseIds);
   const availableCourses = courses.filter((course) => !selectedIds.has(course.id));
-  const matchingCourses = availableCourses.filter((course) =>
-    `${course.code} ${course.title}`.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
   const normalizedQuery = searchQuery.trim().toLowerCase();
+  const matchingCourses = availableCourses.filter((course) =>
+    `${course.code} ${course.title}`.toLowerCase().includes(normalizedQuery),
+  );
   const exactMatch = matchingCourses.find(
     (course) =>
       course.code.toLowerCase() === normalizedQuery ||
@@ -55,7 +55,7 @@ function render(focusTarget?: string): void {
 
   const draftCourse = courses.find((course) => course.id === draftCourseId);
   const hasSearchResults = Boolean(
-    searchQuery && !draftCourse && matchingCourses.length > 0,
+    normalizedQuery && !draftCourse && matchingCourses.length > 0,
   );
   const draftSkills =
     draftCourse?.skillIds
@@ -66,9 +66,9 @@ function render(focusTarget?: string): void {
       ? "No supported courses are available in this demo yet."
       : availableCourses.length === 0
         ? "You have added every supported demo course."
-        : searchQuery && matchingCourses.length === 0
+        : normalizedQuery && matchingCourses.length === 0
           ? "No matching courses. Try another code or name."
-          : searchQuery && !draftCourse
+          : normalizedQuery && !draftCourse
             ? `${matchingCourses.length} matching course${matchingCourses.length === 1 ? "" : "s"}.`
             : "";
   const activeElement = document.activeElement;
@@ -316,7 +316,8 @@ function render(focusTarget?: string): void {
 
   root.querySelector<HTMLButtonElement>(".save-button")?.addEventListener("click", () => {
     announce(
-      `${state.completedCourses.length} course${state.completedCourses.length === 1 ? "" : "s"} saved locally.`,
+      state.persistenceMessage ??
+        `${state.completedCourses.length} course${state.completedCourses.length === 1 ? "" : "s"} saved locally.`,
     );
   });
 }
