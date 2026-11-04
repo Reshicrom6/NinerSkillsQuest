@@ -1,5 +1,6 @@
 import { courses, skillsById } from "./data/catalog";
 import { careerRoadmaps, employerProfiles } from "./data/careerGoals";
+import { courseCatalogUrl, getLearningOptions } from "./data/learningOptions";
 import { careerGoalStore } from "./state/careerGoalStore";
 import { courseSelectionStore } from "./state/courseSelectionStore";
 import { demoSessionStore } from "./state/demoSessionStore";
@@ -18,6 +19,7 @@ const root = getApplicationRoot();
 const announcer = document.querySelector<HTMLDivElement>("#announcer");
 let searchQuery = "";
 let draftCourseId = "";
+let selectedLearningSkillId = "";
 
 function announce(message: string): void {
   if (announcer) {
@@ -148,6 +150,12 @@ function render(focusTarget?: string): void {
   );
   const getSkillNames = (skillIds: string[]) =>
     skillIds.map((skillId) => skillsById.get(skillId)?.name ?? skillId);
+  if (!skillComparison.unmatchedTargetSkillIds.includes(selectedLearningSkillId)) {
+    selectedLearningSkillId = "";
+  }
+  const selectedLearningOptions = selectedLearningSkillId
+    ? getLearningOptions(selectedLearningSkillId)
+    : null;
   const careerGoalPrompt =
     !careerGoal.selectedRoadmapId && !careerGoal.selectedEmployerId
       ? "Choose a career roadmap and a Charlotte employer to set your goal."
@@ -457,6 +465,61 @@ function render(focusTarget?: string): void {
         }
       </section>
 
+      <section class="learning-options" aria-labelledby="learning-options-title">
+        <h2 id="learning-options-title">Explore learning options</h2>
+        ${
+          skillComparison.status !== "ready"
+            ? `<p class="goal-prompt">Choose a complete career goal before exploring options for target skills not recorded from courses.</p>`
+            : skillComparison.unmatchedTargetSkillIds.length === 0
+              ? `<p class="mapped-empty">There are no target skills currently unmatched by the course list.</p>`
+              : `
+                <div class="field">
+                  <label for="learning-skill">Choose a target skill not recorded from courses</label>
+                  <select id="learning-skill" data-focus-target="learning-skill">
+                    <option value="">Select a skill</option>
+                    ${skillComparison.unmatchedTargetSkillIds
+                      .map((skillId) => `
+                        <option value="${escapeHtml(skillId)}" ${selectedLearningSkillId === skillId ? "selected" : ""}>
+                          ${escapeHtml(skillsById.get(skillId)?.name ?? skillId)}
+                        </option>`)
+                      .join("")}
+                  </select>
+                </div>
+                ${
+                  selectedLearningSkillId
+                    ? selectedLearningOptions
+                      ? `
+                        ${
+                          selectedLearningOptions.catalogSearchTerm
+                            ? `<p class="learning-catalog-note">
+                                Suggested catalog topic: ${escapeHtml(selectedLearningOptions.catalogSearchTerm)}.
+                                Verify current offerings and prerequisites in the
+                                <a href="${courseCatalogUrl}" target="_blank" rel="noopener noreferrer">UNC Charlotte catalog</a>.
+                              </p>`
+                            : ""
+                        }
+                        ${
+                          selectedLearningOptions.resources.length > 0
+                            ? `<ul class="learning-resource-list">
+                                ${selectedLearningOptions.resources
+                                  .map((resource) => `
+                                    <li>
+                                      <a href="${escapeHtml(resource.url)}" target="_blank" rel="noopener noreferrer">
+                                        ${escapeHtml(resource.title)}
+                                      </a>
+                                    </li>`)
+                                  .join("")}
+                              </ul>`
+                            : `<p class="mapped-empty">No practice resources are available for this skill yet.</p>`
+                        }
+                      `
+                      : `<p class="mapped-empty" role="status">No course or practice resources are mapped to this skill yet.</p>`
+                    : ""
+                }
+              `
+        }
+      </section>
+
       <button class="button button-primary save-button" type="button">
         Check save status
       </button>
@@ -539,6 +602,14 @@ function render(focusTarget?: string): void {
         ? ` for ${updatedGoal.selectedRoadmap.name}.`
         : ".";
       announce(`Career employer changed to ${employerName}${roadmapStatus}`);
+    }
+  });
+
+  root.querySelector<HTMLSelectElement>("#learning-skill")?.addEventListener("change", (event) => {
+    const select = event.currentTarget;
+    if (select instanceof HTMLSelectElement) {
+      selectedLearningSkillId = select.value;
+      render("learning-skill");
     }
   });
 

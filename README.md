@@ -44,7 +44,10 @@ targets update immediately and persist in `localStorage`. The roadmap and
 employer selectors are keyboard accessible. With a complete goal, the skill
 comparison separates course-mapped target matches from targets not recorded by
 the current course list. Unmatched targets are not treated as proof of missing
-ability.
+ability. A target skill not recorded by courses can be selected to see a
+curated learning resource and a topic to investigate in the official UNC
+Charlotte catalog. Catalog topics are suggestions, not confirmed current
+elective offerings; check the current catalog and prerequisites.
 
 The course-entry screen follows the supplied Figma course panel. The project or
 experience tab and in-progress status are shown only as disabled visual context;
