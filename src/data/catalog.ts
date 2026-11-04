@@ -6,6 +6,9 @@ export const skills: Skill[] = [
   { id: "information-security", name: "InfoSec" },
   { id: "networking", name: "Networking" },
   { id: "agile", name: "Agile" },
+  { id: "api-development", name: "API Development" },
+  { id: "database-design", name: "Database Design" },
+  { id: "web-development", name: "Web Development" },
 ];
 
 export const courses: Course[] = [
