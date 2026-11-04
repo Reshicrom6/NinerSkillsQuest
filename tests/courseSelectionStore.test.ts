@@ -30,6 +30,16 @@ describe("course selection state", () => {
     ]);
   });
 
+  it("adds confirmed transcript courses in one update without duplicating existing IDs", () => {
+    const store = new CourseSelectionStore(createStorage());
+    store.addCourse("itcs-2214");
+
+    expect(store.addCourses(["itcs-2214", "itis-3200", "itis-3200", "unknown-course"])).toEqual([
+      "itis-3200",
+    ]);
+    expect(store.getState().completedCourseIds).toEqual(["itcs-2214", "itis-3200"]);
+  });
+
   it("keeps a shared skill until every selected course providing it is removed", () => {
     const firstCourse: Course = {
       id: "first-course",

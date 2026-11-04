@@ -1,6 +1,7 @@
 import { courses, skillsById } from "./data/catalog";
 import { careerRoadmaps, employerProfiles } from "./data/careerGoals";
 import { courseCatalogUrl, getLearningOptions } from "./data/learningOptions";
+import { parseTranscriptPdf, type TranscriptCourseCandidate } from "./data/transcript";
 import { careerGoalStore } from "./state/careerGoalStore";
 import { courseSelectionStore } from "./state/courseSelectionStore";
 import { demoSessionStore } from "./state/demoSessionStore";
@@ -20,6 +21,11 @@ const announcer = document.querySelector<HTMLDivElement>("#announcer");
 let searchQuery = "";
 let draftCourseId = "";
 let selectedLearningSkillId = "";
+let transcriptCandidates: TranscriptCourseCandidate[] = [];
+let selectedTranscriptCourseIds = new Set<string>();
+let transcriptMessage: string | null = null;
+let transcriptIsParsing = false;
+let transcriptAttempt = 0;
 
 function announce(message: string): void {
   if (announcer) {
@@ -85,6 +91,55 @@ function escapeHtml(value: string): string {
     };
     return entities[character];
   });
+}
+
+async function reviewTranscript(file: File): Promise<void> {
+  const attempt = ++transcriptAttempt;
+  transcriptCandidates = [];
+  selectedTranscriptCourseIds = new Set();
+  transcriptMessage = "Reading this PDF in your browser. Nothing has been saved.";
+  transcriptIsParsing = true;
+  render();
+
+  try {
+    const candidates = await parseTranscriptPdf(file, courses);
+    if (attempt !== transcriptAttempt) {
+      return;
+    }
+    transcriptCandidates = candidates;
+    selectedTranscriptCourseIds = new Set(
+      candidates
+        .flatMap((candidate) =>
+          candidate.status === "candidate" && candidate.courseId ? [candidate.courseId] : [],
+        ),
+    );
+    transcriptMessage =
+      candidates.length > 0
+        ? "Review the extracted courses. Nothing changes until you confirm."
+        : "No recognizable course records were found. Use manual course entry instead.";
+  } catch (error) {
+    if (attempt !== transcriptAttempt) {
+      return;
+    }
+    transcriptMessage =
+      error instanceof Error
+        ? `${error.message} Use manual course entry instead.`
+        : "The PDF could not be read. Use manual course entry instead.";
+  } finally {
+    if (attempt === transcriptAttempt) {
+      transcriptIsParsing = false;
+      render();
+    }
+  }
+}
+
+function discardTranscriptReview(): void {
+  transcriptAttempt += 1;
+  transcriptCandidates = [];
+  selectedTranscriptCourseIds = new Set();
+  transcriptMessage = "Transcript preview discarded. Saved courses were not changed.";
+  transcriptIsParsing = false;
+  render();
 }
 
 function render(focusTarget?: string): void {
@@ -347,6 +402,64 @@ function render(focusTarget?: string): void {
         }
       </section>
 
+      <section class="transcript-panel" aria-labelledby="transcript-title">
+        <h2 id="transcript-title">Review an unofficial transcript</h2>
+        <p class="transcript-privacy">
+          Privacy notice: this local demo parses the PDF in your browser. The raw file and extracted details are not uploaded or saved.
+          Only course IDs you confirm are added to this browser's course list.
+        </p>
+        <label class="transcript-picker-label" for="transcript-file">Choose a PDF transcript</label>
+        <input id="transcript-file" type="file" accept="application/pdf,.pdf" ${transcriptIsParsing ? "disabled" : ""} />
+        <div class="transcript-drop" id="transcript-drop">
+          <p>Or drag a PDF here to review it.</p>
+          <button class="text-button sample-transcript-button" type="button" ${transcriptIsParsing ? "disabled" : ""}>
+            Load synthetic sample PDF
+          </button>
+        </div>
+        ${
+          transcriptMessage
+            ? `<p class="transcript-message" role="status">${escapeHtml(transcriptMessage)}</p>`
+            : ""
+        }
+        ${
+          transcriptCandidates.length > 0
+            ? `<ul class="transcript-candidate-list">
+                ${transcriptCandidates
+                  .map((candidate, index) => {
+                    if (candidate.status !== "candidate" || !candidate.courseId) {
+                      return `<li class="transcript-excluded">
+                        <strong>${escapeHtml(candidate.code)} ${escapeHtml(candidate.title)}</strong>
+                        ${candidate.grade ? ` · grade ${escapeHtml(candidate.grade)}` : ""}
+                        <span>${escapeHtml(candidate.reason ?? "Not eligible for import.")}</span>
+                      </li>`;
+                    }
+                    const checkboxId = `transcript-course-${index}`;
+                    return `<li class="transcript-candidate">
+                      <input
+                        id="${checkboxId}"
+                        type="checkbox"
+                        data-transcript-course="${escapeHtml(candidate.courseId)}"
+                        ${selectedTranscriptCourseIds.has(candidate.courseId) ? "checked" : ""}
+                      />
+                      <label for="${checkboxId}">
+                        ${escapeHtml(candidate.code)} ${escapeHtml(candidate.title)}
+                        ${candidate.grade ? ` · grade ${escapeHtml(candidate.grade)}` : ""}
+                      </label>
+                    </li>`;
+                  })
+                  .join("")}
+              </ul>
+              <div class="transcript-actions">
+                <button class="button button-primary confirm-transcript" type="button" ${
+                  transcriptIsParsing || selectedTranscriptCourseIds.size === 0 ? "disabled" : ""
+                }>Add selected courses</button>
+                <button class="text-button discard-transcript" type="button">Discard preview</button>
+              </div>`
+            : ""
+        }
+        <button class="text-button manual-course-entry" type="button">Continue with manual course entry</button>
+      </section>
+
       <section class="career-goal" aria-labelledby="career-goal-title">
         <div class="career-goal-heading">
           <h2 id="career-goal-title">Choose your career goal</h2>
@@ -554,6 +667,78 @@ function render(focusTarget?: string): void {
     searchQuery = searchInput.value;
     draftCourseId = "";
     render("course-search");
+  });
+
+  root.querySelector<HTMLInputElement>("#transcript-file")?.addEventListener("change", (event) => {
+    const input = event.currentTarget;
+    if (input instanceof HTMLInputElement) {
+      const file = input.files?.[0];
+      input.value = "";
+      if (file) {
+        void reviewTranscript(file);
+      }
+    }
+  });
+
+  const transcriptDrop = root.querySelector<HTMLDivElement>("#transcript-drop");
+  transcriptDrop?.addEventListener("dragover", (event) => event.preventDefault());
+  transcriptDrop?.addEventListener("drop", (event) => {
+    event.preventDefault();
+    const file = event.dataTransfer?.files[0];
+    if (file) {
+      void reviewTranscript(file);
+    }
+  });
+
+  root.querySelector<HTMLButtonElement>(".sample-transcript-button")?.addEventListener("click", async () => {
+    try {
+      const response = await fetch("/synthetic-transcript.pdf");
+      if (!response.ok) {
+        throw new Error("The sample transcript could not be loaded.");
+      }
+      const blob = await response.blob();
+      await reviewTranscript(new File([blob], "synthetic-transcript.pdf", { type: "application/pdf" }));
+    } catch (error) {
+      transcriptMessage =
+        error instanceof Error ? error.message : "The sample transcript could not be loaded.";
+      render();
+    }
+  });
+
+  root.querySelectorAll<HTMLInputElement>("[data-transcript-course]").forEach((checkbox) => {
+    checkbox.addEventListener("change", () => {
+      const courseId = checkbox.dataset.transcriptCourse;
+      if (!courseId) {
+        return;
+      }
+      if (checkbox.checked) {
+        selectedTranscriptCourseIds.add(courseId);
+      } else {
+        selectedTranscriptCourseIds.delete(courseId);
+      }
+      render();
+    });
+  });
+
+  root.querySelector<HTMLButtonElement>(".confirm-transcript")?.addEventListener("click", () => {
+    const added = courseSelectionStore.addCourses([...selectedTranscriptCourseIds]);
+    transcriptMessage =
+      added.length > 0
+        ? `${added.length} course${added.length === 1 ? "" : "s"} added. Existing courses were not duplicated.`
+        : "No new courses were added. Existing selections were not duplicated.";
+    transcriptCandidates = [];
+    selectedTranscriptCourseIds = new Set();
+    announce(transcriptMessage);
+    render();
+  });
+
+  root.querySelector<HTMLButtonElement>(".discard-transcript")?.addEventListener("click", () => {
+    discardTranscriptReview();
+  });
+
+  root.querySelector<HTMLButtonElement>(".manual-course-entry")?.addEventListener("click", () => {
+    root.querySelector<HTMLInputElement>("#course-search")?.focus();
+    root.querySelector<HTMLInputElement>("#course-search")?.scrollIntoView({ behavior: "smooth" });
   });
 
   root.querySelectorAll<HTMLButtonElement>("[data-select-course]").forEach((button) => {

@@ -453,6 +453,90 @@ select {
   padding-left: 18px;
 }
 
+.transcript-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.transcript-panel h2 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.transcript-privacy,
+.transcript-message,
+.transcript-drop p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.transcript-privacy {
+  padding: 10px;
+  border-radius: 5px;
+  background: #fff8e8;
+  color: #745a20;
+}
+
+.transcript-picker-label,
+.transcript-candidate label {
+  color: var(--color-text);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.transcript-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: 5px;
+  background: var(--color-surface-soft);
+}
+
+.transcript-candidate-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.transcript-candidate,
+.transcript-excluded {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px;
+  border-radius: 5px;
+  background: #faf9f6;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.transcript-candidate input {
+  margin: 1px 0 0;
+}
+
+.transcript-excluded {
+  flex-direction: column;
+  gap: 3px;
+  color: var(--color-muted);
+}
+
+.transcript-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .skill-gap h2,
 .skill-gap h3,
 .skill-gap p {

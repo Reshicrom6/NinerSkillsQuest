@@ -48,6 +48,9 @@ ability. A target skill not recorded by courses can be selected to see a
 curated learning resource and a topic to investigate in the official UNC
 Charlotte catalog. Catalog topics are suggestions, not confirmed current
 elective offerings; check the current catalog and prerequisites.
+The optional synthetic transcript sample is parsed in the browser. Review
+course candidates and confirm them before import; only confirmed supported
+course IDs are saved.
 
 The course-entry screen follows the supplied Figma course panel. The project or
 experience tab and in-progress status are shown only as disabled visual context;
@@ -60,7 +63,8 @@ Coursework suggestions are not verified mastery, and roadmap skill targets and
 employer profiles are fictional demo data, not verified hiring requirements or
 employer endorsements. The demo session does not authenticate users or isolate
 one student's data from another. Transcript upload and backend services are not
-included yet.
+included. Transcript parsing supports only the bundled synthetic sample format;
+do not upload a real transcript or personal information.
 
 ## AI-use disclosure
 
