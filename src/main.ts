@@ -1,4 +1,6 @@
 import { courses, skillsById } from "./data/catalog";
+import { careerRoadmaps, employerProfiles } from "./data/careerGoals";
+import { careerGoalStore } from "./state/careerGoalStore";
 import { courseSelectionStore } from "./state/courseSelectionStore";
 import "./style.css";
 
@@ -36,6 +38,7 @@ function escapeHtml(value: string): string {
 
 function render(focusTarget?: string): void {
   const state = courseSelectionStore.getState();
+  const careerGoal = careerGoalStore.getState();
   const selectedIds = new Set(state.completedCourseIds);
   const availableCourses = courses.filter((course) => !selectedIds.has(course.id));
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -61,6 +64,18 @@ function render(focusTarget?: string): void {
     draftCourse?.skillIds
       .map((skillId) => skillsById.get(skillId))
       .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill)) ?? [];
+  const targetSkills =
+    careerGoal.selectedRoadmap?.skillIds
+      .map((skillId) => skillsById.get(skillId))
+      .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill)) ?? [];
+  const careerGoalPrompt =
+    !careerGoal.selectedRoadmapId && !careerGoal.selectedEmployerId
+      ? "Choose a career roadmap and a Charlotte employer to set your goal."
+      : !careerGoal.selectedRoadmapId
+        ? "Choose a career roadmap to complete your goal."
+        : !careerGoal.selectedEmployerId
+          ? "Choose a Charlotte employer to complete your goal."
+          : "";
   const searchHelp =
     courses.length === 0
       ? "No supported courses are available in this demo yet."
@@ -85,7 +100,7 @@ function render(focusTarget?: string): void {
       <header class="panel-heading">
         <div>
           <h1 id="page-title">Add what you already know</h1>
-          <p>Build your Backend Developer starting point.</p>
+          <p>Add completed courses and choose a career goal.</p>
         </div>
         <span class="demo-badge">Local demo</span>
       </header>
@@ -241,6 +256,84 @@ function render(focusTarget?: string): void {
         }
       </section>
 
+      <section class="career-goal" aria-labelledby="career-goal-title">
+        <div class="career-goal-heading">
+          <h2 id="career-goal-title">Choose your career goal</h2>
+          <p>Pick a roadmap and a Charlotte employer to define your target profile.</p>
+        </div>
+        <div class="goal-fields">
+          <div class="field">
+            <label for="career-roadmap">Career roadmap</label>
+            <select
+              id="career-roadmap"
+              data-focus-target="career-roadmap"
+              aria-describedby="career-goal-prompt"
+            >
+              <option value="">Select a roadmap</option>
+              ${careerRoadmaps
+                .map(
+                  (roadmap) => `
+                    <option
+                      value="${escapeHtml(roadmap.id)}"
+                      ${careerGoal.selectedRoadmapId === roadmap.id ? "selected" : ""}
+                    >
+                      ${escapeHtml(roadmap.name)}
+                    </option>`,
+                )
+                .join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label for="career-employer">Charlotte employer</label>
+            <select
+              id="career-employer"
+              data-focus-target="career-employer"
+              aria-describedby="career-goal-prompt"
+            >
+              <option value="">Select an employer</option>
+              ${employerProfiles
+                .map(
+                  (employer) => `
+                    <option
+                      value="${escapeHtml(employer.id)}"
+                      ${careerGoal.selectedEmployerId === employer.id ? "selected" : ""}
+                    >
+                      ${escapeHtml(employer.name)}
+                    </option>`,
+                )
+                .join("")}
+            </select>
+          </div>
+        </div>
+        ${
+          careerGoalPrompt
+            ? `<p id="career-goal-prompt" class="goal-prompt" role="status">${escapeHtml(careerGoalPrompt)}</p>`
+            : `<p id="career-goal-prompt" class="sr-only" role="status">Career goal selected.</p>`
+        }
+        ${
+          careerGoal.targetProfile && careerGoal.selectedRoadmap && careerGoal.selectedEmployer
+            ? `<div class="goal-summary" aria-live="polite">
+                <p class="goal-summary-label">Current goal</p>
+                <h3>${escapeHtml(careerGoal.selectedRoadmap.name)} · ${escapeHtml(careerGoal.selectedEmployer.name)}</h3>
+                <p class="goal-employer-details">
+                  ${escapeHtml(careerGoal.selectedEmployer.industry)} · ${escapeHtml(careerGoal.selectedEmployer.location)}
+                </p>
+                <h4>Roadmap skill targets</h4>
+                ${
+                  targetSkills.length > 0
+                    ? `<ul class="skill-tags goal-skill-tags" aria-label="Target skills for ${escapeHtml(careerGoal.selectedRoadmap.name)}">
+                        ${targetSkills.map((skill) => `<li>${escapeHtml(skill.name)}</li>`).join("")}
+                      </ul>`
+                    : `<p class="goal-prompt">No target skills are currently mapped to this roadmap.</p>`
+                }
+              </div>`
+            : ""
+        }
+        <p class="goal-demo-note">
+          Employer profiles and target skill mappings are illustrative local-demo data.
+        </p>
+      </section>
+
       <button class="button button-primary save-button" type="button">
         Save and continue →
       </button>
@@ -249,11 +342,10 @@ function render(focusTarget?: string): void {
         Coursework suggests exposure, not verified mastery. Course availability and
         requirements must be checked in the official catalog.
       </p>
-      ${
-        state.persistenceMessage
-          ? `<p class="storage-message" role="status">${escapeHtml(state.persistenceMessage)}</p>`
-          : ""
-      }
+      ${[state.persistenceMessage, careerGoal.persistenceMessage]
+        .filter((message): message is string => message !== null)
+        .map((message) => `<p class="storage-message" role="status">${escapeHtml(message)}</p>`)
+        .join("")}
     </main>
   `;
 
@@ -301,6 +393,20 @@ function render(focusTarget?: string): void {
     announce(`Added ${course.code} — ${course.title}.`);
   });
 
+  root.querySelector<HTMLSelectElement>("#career-roadmap")?.addEventListener("change", (event) => {
+    const select = event.currentTarget;
+    if (select instanceof HTMLSelectElement) {
+      careerGoalStore.selectRoadmap(select.value || null);
+    }
+  });
+
+  root.querySelector<HTMLSelectElement>("#career-employer")?.addEventListener("change", (event) => {
+    const select = event.currentTarget;
+    if (select instanceof HTMLSelectElement) {
+      careerGoalStore.selectEmployer(select.value || null);
+    }
+  });
+
   root.querySelectorAll<HTMLButtonElement>("[data-remove-course]").forEach((button) => {
     button.addEventListener("click", () => {
       const courseId = button.dataset.removeCourse;
@@ -323,4 +429,5 @@ function render(focusTarget?: string): void {
 }
 
 courseSelectionStore.subscribe(() => render("course-search"));
+careerGoalStore.subscribe(() => render());
 render();
