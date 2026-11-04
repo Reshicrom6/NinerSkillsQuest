@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { careerRoadmaps } from "../src/data/careerGoals";
 import { courses, skills } from "../src/data/catalog";
 
 describe("demo course catalog", () => {
@@ -14,6 +15,21 @@ describe("demo course catalog", () => {
       expect(course.skillIds.length).toBeGreaterThan(0);
       for (const skillId of course.skillIds) {
         expect(skillIds.has(skillId), `${course.code} references ${skillId}`).toBe(true);
+      }
+    }
+  });
+
+  it("uses supported shared skill IDs for the career roadmap", () => {
+    const skillIds = new Set(skills.map((skill) => skill.id));
+
+    expect(careerRoadmaps.length).toBeGreaterThan(0);
+    expect(new Set(careerRoadmaps.map((roadmap) => roadmap.id)).size).toBe(
+      careerRoadmaps.length,
+    );
+    for (const roadmap of careerRoadmaps) {
+      expect(new Set(roadmap.skillIds).size).toBe(roadmap.skillIds.length);
+      for (const skillId of roadmap.skillIds) {
+        expect(skillIds.has(skillId), `${roadmap.name} references ${skillId}`).toBe(true);
       }
     }
   });
