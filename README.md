@@ -67,8 +67,11 @@ this feature handles completed courses only.
 
 ## Assignment evidence
 
-Implementation and demonstration evidence is collected in
+Shared links and assignment resources are collected in
 [docs/assignment-deliverables.md](./docs/assignment-deliverables.md).
+Individual contribution details are documented in
+[docs/kaushal-details.md](./docs/kaushal-details.md). Shared screenshots and
+project evidence are included in [docs/assignment-deliverables.md](./docs/assignment-deliverables.md).
 
 Screenshots include:
 
