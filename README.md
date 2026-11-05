@@ -25,6 +25,11 @@ npm test
 
 ## Usage
 
+Select **Start local demo** to open the prototype. This is a browser-local demo
+session, not identity verification or authentication. Use sample information
+only. Sign out to return to the start screen; course and goal data remain in
+this browser and are not isolated by a real account.
+
 Search the supported demo courses by code or title, choose a result, and select
 **Add course**. Remove individual selections at any time. Mapped skills update
 immediately, are deduplicated across selected courses, and are derived from
@@ -36,7 +41,13 @@ assistive technology. Choose a career roadmap and one of the generic Charlotte
 employer profiles in the career goal section. The demo roadmaps are Backend
 Developer and Full-stack Developer; the current goal and roadmap skill
 targets update immediately and persist in `localStorage`. The roadmap and
-employer selectors are keyboard accessible.
+employer selectors are keyboard accessible. With a complete goal, the skill
+comparison separates course-mapped target matches from targets not recorded by
+the current course list. Unmatched targets are not treated as proof of missing
+ability. A target skill not recorded by courses can be selected to see a
+curated learning resource and a topic to investigate in the official UNC
+Charlotte catalog. Catalog topics are suggestions, not confirmed current
+elective offerings; check the current catalog and prerequisites.
 
 The course-entry screen follows the supplied Figma course panel. The project or
 experience tab and in-progress status are shown only as disabled visual context;
@@ -47,8 +58,9 @@ this feature handles completed courses only.
 The course catalog and mappings are illustrative, not official catalog data.
 Coursework suggestions are not verified mastery, and roadmap skill targets and
 employer profiles are fictional demo data, not verified hiring requirements or
-employer endorsements. Authentication, transcript upload, and backend services
-are not included.
+employer endorsements. The demo session does not authenticate users or isolate
+one student's data from another. Transcript upload and backend services are not
+included yet.
 
 ## AI-use disclosure
 
