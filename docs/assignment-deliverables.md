@@ -1,238 +1,152 @@
 # ITSC 3155 Lab Deliverables
 
-This document maps the assignment requirements to the Niner Skills Quest
-repository. **Verified** items are supported by repository files, tests, or
-Git history. **Add evidence** items require screenshots, URLs, or confirmation
-from GitHub, VS Code, Figma, or the team.
+## Niner Skills Quest
 
-## Required links
+Niner Skills Quest is a browser-based career-planning prototype for UNC
+Charlotte students. Students can record completed courses, review the skills
+mapped to those courses, select a career roadmap and Charlotte employer, and
+compare recorded course skills with career-goal targets.
 
-| Deliverable | Link or evidence |
+This submission demonstrates the transition from user stories and Figma design
+to a working Sprint 1 implementation. The current application is a local demo
+using illustrative course mappings and fictional employer profiles. Course
+mappings represent possible exposure, not verified mastery.
+
+---
+
+## Submission links
+
+| Resource | Link |
 | --- | --- |
-| GitHub repository | [NinerSkillsQuest](https://github.com/kgajula1-stack/NinerSkillsQuest) |
-| GitHub Project | https://github.com/users/kgajula1-stack/projects/2 |
-| Figma prototype | https://www.figma.com/design/LpfH5WzheMLebrh6dr7jyA/Niner-Skills-Quest?node-id=69-103&t=sW2OVDTOKIzr2C4g-0 |
-| Implemented issues | [Issue #1](https://github.com/kgajula1-stack/NinerSkillsQuest/issues/1), [Issue #2](https://github.com/kgajula1-stack/NinerSkillsQuest/issues/2), [Issue #3](https://github.com/kgajula1-stack/NinerSkillsQuest/issues/3) |
-| Pull requests | [PR #20](https://github.com/kgajula1-stack/NinerSkillsQuest/pull/20), [PR #21](https://github.com/kgajula1-stack/NinerSkillsQuest/pull/21) |
+| Repository | [kgajula1-stack/NinerSkillsQuest](https://github.com/kgajula1-stack/NinerSkillsQuest) |
+| GitHub Issues | [Repository issues](https://github.com/kgajula1-stack/NinerSkillsQuest/issues) |
+| GitHub Project | [Niner Skills Quest Project](https://github.com/users/kgajula1-stack/projects/2) |
+| Figma prototype | [Niner Skills Quest — node 69:103](https://www.figma.com/design/LpfH5WzheMLebrh6dr7jyA/Niner-Skills-Quest?node-id=69-103&t=sW2OVDTOKIzr2C4g-0) |
+| Completed-course issue | [Issue #1](https://github.com/kgajula1-stack/NinerSkillsQuest/issues/1) |
+| Career-goal issue | [Issue #2](https://github.com/kgajula1-stack/NinerSkillsQuest/issues/2) |
+| Skill-comparison issue | [Issue #3](https://github.com/kgajula1-stack/NinerSkillsQuest/issues/3) |
+| Completed-course pull request | [PR #20](https://github.com/kgajula1-stack/NinerSkillsQuest/pull/20) |
+| Skill-comparison pull request | [PR #21](https://github.com/kgajula1-stack/NinerSkillsQuest/pull/21) |
 
-## Project description and screenshot evidence
+---
 
-**Niner Skills Quest** is a browser-based career-planning application for UNC
-Charlotte students. It helps students record completed courses, view skills
-associated with those courses, select a career roadmap and Charlotte employer,
-and compare recorded course skills with the skills targeted by their career
-goal.
+## Implemented functionality
 
-The current version is a local demonstration prototype using illustrative
-course mappings and fictional employer profiles. Course mappings represent
-possible exposure, not verified mastery.
+### Completed-course workflow
 
-### Feature evidence
+Students can search the supported catalog by course code or title, add a
+completed course, view its suggested skills, and remove it later. The
+application prevents duplicate selections, derives a deduplicated skill list,
+and persists course IDs in browser storage.
 
-- **Local demo access:** [Issue #5 screenshot](./screenshots/issue-5-demo-session.png)
-  shows the local demo access screen and Start local demo action.
-- **Completed-course workflow:** [Issue #1 screenshot](./screenshots/issue-1-completed-courses.png)
-  shows a completed course, mapped Java/OOP skills, and the remove control.
-- **Career-goal selection:** [Issue #2 screenshot](./screenshots/issue-2-career-goal.png)
-  shows a Backend Developer roadmap, Charlotte employer, target skills, and
-  current-goal summary.
-- **Skill comparison:** [Issue #3 screenshot](./screenshots/issue-3-skill-comparison.png)
-  shows matched skills and target skills not recorded from courses.
-- **Empty states and guidance:** [Empty-state screenshot](./screenshots/feature-empty-state.png)
-  shows the no-course state and incomplete career-goal prompt.
-- **Combined workflow:** [Course and goal screenshot](./screenshots/feature-course-and-goal.png)
-  shows course selections, mapped skills, a selected career goal, and the
-  comparison section together.
+Evidence:
 
-### Main capabilities
+- [Completed-course screenshot](./screenshots/issue-1-completed-courses.png)
+- [Course-entry plan](./issue-1-plan.md)
+- [Course-entry test results](./issue-1-test-results.md)
 
-- Search, add, and remove completed courses
-- Deduplicate skills derived from selected courses
-- Persist course and career-goal selections in browser storage
-- Select a career roadmap and Charlotte employer
-- Compare recorded course skills with target skills
-- Provide keyboard-accessible controls and live announcements
-- Display recoverable messages for invalid or unavailable browser storage
+### Career-goal selection
 
-### Technology and limitations
+Students can select a career roadmap and a Charlotte employer. A completed
+goal displays the selected roadmap, employer details, and target skills. Both
+selections persist locally and can be changed independently.
 
-The project uses TypeScript, Vite, Vitest, vanilla browser DOM APIs, CSS,
-`localStorage`, and `sessionStorage`. It does not yet include real
-authentication, backend services, transcript uploads, official catalog data,
-verified employer requirements, or account-level data isolation.
+Evidence:
 
-## 1. GitHub Issues and product backlog
+- [Career-goal screenshot](./screenshots/issue-2-career-goal.png)
+- [Career-goal plan](./issue-2-plan.md)
+- [Career-goal test results](./issue-2-test-results.md)
 
-https://github.com/kgajula1-stack/NinerSkillsQuest/issues
+### Skill comparison
 
-Repository planning and verification documents are available for:
+The application compares skills derived from completed courses with the
+selected roadmap's target skills. It separates matches from skills not
+recorded by the current course list and explicitly avoids treating unrecorded
+skills as proof that a student lacks them.
 
-- [Completed courses](./issue-1-plan.md)
-- [Career roadmap and employer goal](./issue-2-plan.md)
-- [Skill comparison](./issue-3-test-results.md)
+Evidence:
 
-Verify that each GitHub Issue contains:
+- [Skill-comparison screenshot](./screenshots/issue-3-skill-comparison.png)
+- [Skill-comparison test results](./issue-3-test-results.md)
 
-- A user story beginning with `As a [role], I want to [what] so that [why].`
-- Testable acceptance criteria
-- Development, review, and testing tasks
-- A `size:small`, `size:medium`, or `size:large` label
-- A relevant Figma design link, when applicable
-- Inclusion in the GitHub Project
+### Local demo session
 
-Available evidence:
+The prototype has a clearly labeled local demo access screen. It does not
+authenticate identities or isolate data between real student accounts.
 
-- [GitHub Issues screenshot](./screenshots/githubIssues.png) shows the
-  repository issue list and sizing labels.
-- [GitHub Project screenshot](./screenshots/githubProjectboard.png) shows
-  Sprint 1 assignments and completed Issues 1–3 in the Done column.
+Evidence:
 
-The screenshots show issue labels and project status. Open the individual
-issues to verify their full acceptance criteria and development-task text.
+- [Demo-session screenshot](./screenshots/issue-5-demo-session.png)
 
-## 2. GitHub Copilot access
+---
 
-**Status: Verified.**
+## Sprint 1 evidence
 
-The [README](../README.md) includes an AI-use disclosure stating that GitHub
-Copilot assisted with implementation, tests, and documentation.
+The Sprint 1 board contains the completed implementation issues in the Done
+column and identifies them with the Sprint 1 iteration.
 
-Copilot access and functionality were verified in the development environment.
-Add the supporting screenshot to `docs/screenshots/` if the instructor requires
-an image artifact.
+![Sprint 1 Project board](./screenshots/githubProjectboard.png)
 
-## 3. VS Code and Copilot setup
+The repository issue list shows the product backlog and sizing labels:
 
-**Status: Verified.**
+![GitHub Issues](./screenshots/githubIssues.png)
 
-The repository is cloned locally and has a working TypeScript/Vite application.
-Setup and verification commands are:
+Supporting planning documents:
 
-```sh
-npm install
-npm run dev
-npm test
-npm run build
-```
+- [Issue #1 plan](./issue-1-plan.md)
+- [Issue #2 plan](./issue-2-plan.md)
+- [Issue #3 test results](./issue-3-test-results.md)
 
-Technology stack:
+---
 
-- Visual Studio Code
-- Git and GitHub
+## Development environment and AI-assisted development
+
+The project was developed in Visual Studio Code using GitHub Copilot and
+Copilot Chat. Copilot was used to help understand the repository structure,
+implement features, create tests, and prepare documentation. The team
+reviewed, tested, and verified the generated work.
+
+Evidence:
+
+- [Copilot account verification](./screenshots/copilotaccountverification.png)
+- [Copilot functionality in VS Code](./screenshots/copilotVerfication.png)
+- [README AI-use disclosure](../README.md#ai-use-disclosure)
+
+The project stack is:
+
 - TypeScript
 - Vite
 - Vitest
 - Vanilla browser DOM APIs
 - CSS
+- Browser `localStorage` and `sessionStorage`
 
-VS Code is configured for this repository and GitHub Copilot Chat was verified
-by answering a project-structure question about the application.
-Add a supporting screenshot to `docs/screenshots/` if the instructor requires
-an image artifact.
+---
 
-## 4. Figma MCP integration
+## Figma MCP status
 
-**Status: MCP connection authenticated; design-file access still rate-limited.**
+The Figma MCP connection is authenticated for the account associated with this
+submission. The authenticated plan reports Code Layers enabled.
 
-Figma design reference: [Niner Skills Quest — node 69:103](https://www.figma.com/design/LpfH5WzheMLebrh6dr7jyA/Niner-Skills-Quest?node-id=69-103&t=sW2OVDTOKIzr2C4g-0)
+The requested design file and node are:
 
-The current Figma MCP status is authenticated. The health check identifies the
-signed-in Figma account, the Starter plan, and Code Layers as enabled. A
-follow-up design-context request for file key
-`LpfH5WzheMLebrh6dr7jyA` and node `69:103` was blocked by the Figma MCP Starter
-plan rate limit, so design context and a Figma screenshot still need to be
-retrieved after the limit resets.
+- File key: `LpfH5WzheMLebrh6dr7jyA`
+- Node: `69:103`
+- [Open the Figma frame](https://www.figma.com/design/LpfH5WzheMLebrh6dr7jyA/Niner-Skills-Quest?node-id=69-103&t=sW2OVDTOKIzr2C4g-0)
 
-Connection: Authenticated
-User: Kaushal Gajula
-Plan: Starter
-Code Layers: Enabled
-Design file: LpfH5WzheMLebrh6dr7jyA
-Node: 69:103
-Design context: Rate limited by Starter plan
+The Figma MCP Starter plan rate limit prevented retrieval of design context and
+a node screenshot during this session. The course-entry implementation still
+follows the supplied design's compact layout, segmented entry tabs, course
+preview, status chips, suggested-skill chips, added-items section, and purple
+notice. The career-goal controls follow the application's existing form and
+card patterns rather than claiming pixel-perfect alignment with an
+uninspectable frame.
 
-The completed-course implementation follows the supplied Figma course panel.
-The design informed the compact layout, segmented entry tabs, course preview,
-status chips, suggested-skill chips, added-items section, and purple notice.
-See [issue-1-plan.md](./issue-1-plan.md).
+---
 
-The career-goal controls follow existing application form and card patterns.
-The available Figma design context did not expose reliable inspectable layers,
-so the implementation does not claim pixel-perfect alignment with an
-unverified frame.
+## Testing and verification
 
-**Add evidence:**
-
-1. Screenshot showing the Figma MCP Server connected in VS Code.
-2. Screenshot showing Copilot accessing the relevant Figma frame.
-3. Figma frame URL.
-
-## 5. Sprint 1 planning
-
-**Status: Screenshot evidence available; verify live project details.**
-
-Sprint 1 implementation includes:
-
-| Feature | Repository status |
-| --- | --- |
-| Completed-course entry | Implemented |
-| Career roadmap and employer selection | Implemented |
-| Course-to-target skill comparison | Implemented |
-| Local demo-session gate | Implemented |
-
-The [GitHub Project screenshot](./screenshots/githubProjectboard.png) shows
-Sprint 1 on the completed feature cards and the Done column containing the
-completed-course, career-goal, and skill-gap issues. The live project should
-still be checked for assignees and priorities before submission.
-
-## 6. Functional feature implementation
-
-**Status: Verified in the repository.**
-
-Issue-specific browser evidence:
-
-- [Issue #1 completed-course workflow](./screenshots/issue-1-completed-courses.png)
-- [Issue #2 career-goal selection](./screenshots/issue-2-career-goal.png)
-- [Issue #3 skill comparison](./screenshots/issue-3-skill-comparison.png)
-- [Issue #5 local demo session](./screenshots/issue-5-demo-session.png)
-
-The application allows students to:
-
-1. Start a clearly labeled local demo session.
-2. Search the supported course catalog by code or title.
-3. Add completed courses and prevent duplicates.
-4. Remove selected courses.
-5. View deduplicated skills derived from selected courses.
-6. Persist course selections in browser `localStorage`.
-7. Select a career roadmap and Charlotte employer.
-8. View the current goal and roadmap skill targets.
-9. Compare course-mapped skills with target skills.
-10. Receive recoverable messages for invalid or unavailable browser storage.
-
-Course mappings represent possible exposure, not verified mastery. Skills not
-represented by selected courses are labeled “not recorded from courses,” not
-proof that the student lacks those skills.
-
-Main implementation files:
-
-- [main.ts](../src/main.ts) — rendering and event handling
-- [types.ts](../src/types.ts) — shared domain types
-- [catalog.ts](../src/data/catalog.ts) — courses and skills
-- [careerGoals.ts](../src/data/careerGoals.ts) — roadmaps and employers
-- [skillGap.ts](../src/data/skillGap.ts) — comparison logic
-- [courseSelectionStore.ts](../src/state/courseSelectionStore.ts) — course state
-- [careerGoalStore.ts](../src/state/careerGoalStore.ts) — career-goal state
-- [demoSessionStore.ts](../src/state/demoSessionStore.ts) — demo-session state
-- [style.css](../src/style.css) — layout and responsive styling
-
-**Add evidence:** feature branch, at least three meaningful commits, linked
-pull request, and merged status.
-
-## 7. Testing and verification
-
-**Status: Verified in the repository; add browser screenshots.**
-
-Run:
+From the repository root:
 
 ```sh
 npm install
@@ -240,79 +154,89 @@ npm test
 npm run build
 ```
 
-The tests cover catalog integrity, course selection, duplicate prevention,
-skill deduplication, persistence, invalid saved data, storage failures,
-career-goal selection, target comparison, and demo-session behavior.
-
-Existing verification documents:
-
-- [Course test results](./issue-1-test-results.md)
-- [Career-goal test results](./issue-2-test-results.md)
-- [Skill-comparison test results](./issue-3-test-results.md)
-
-Automated validation completed on November 4, 2026:
+Latest automated verification:
 
 | Check | Result |
 | --- | --- |
-| `npm test` | Passed: 5 test files, 27 tests |
-| `npm run build` | Passed: TypeScript check and Vite production build |
+| `npm test` | Passed — 5 test files, 27 tests |
+| `npm run build` | Passed — TypeScript check and Vite production build |
 
-Browser evidence captured from the local Vite application:
+The automated tests cover:
 
-- [Empty-state screenshot](./screenshots/feature-empty-state.png) shows the
-  local demo, course search, no-course empty state, and incomplete career goal.
-- [Course and goal screenshot](./screenshots/feature-course-and-goal.png) shows
-  a completed course, mapped skills, selected Full-stack Developer goal,
-  selected employer, matched skills, and skills not recorded from courses.
+- Course, skill, and roadmap catalog integrity
+- Duplicate course prevention
+- Skill deduplication and overlap-safe removal
+- Empty states
+- Course and career-goal persistence
+- Invalid saved-data recovery
+- Browser-storage read/write failures
+- Missing, empty, matched, and unmatched skill comparisons
+- Demo-session start, restore, and sign-out behavior
 
-**Add evidence:** terminal screenshot showing the passing commands if your
-instructor specifically requires command-line output as an image.
+Additional verification documents:
 
-## Demonstration sequence
+- [Completed-course verification](./issue-1-test-results.md)
+- [Career-goal verification](./issue-2-test-results.md)
+- [Skill-comparison verification](./issue-3-test-results.md)
 
-1. Show the user story and acceptance criteria in GitHub Issues.
-2. Show the corresponding Figma frame.
-3. Show the issue assigned to Sprint 1.
-4. Run the application with `npm run dev`.
-5. Start the local demo.
-6. Add and remove a supported course.
-7. Show the mapped skills.
-8. Select a roadmap and employer.
-9. Show matched and not-recorded target skills.
-10. Show tests, build output, commits, and pull request.
-11. Explain how Copilot and Figma MCP supported implementation.
+---
 
-## Screenshot placeholders
+## Application evidence gallery
 
-Screenshots already captured for the testing evidence:
+### Empty state
 
-1. ![Empty-state feature](./screenshots/feature-empty-state.png)
-2. ![Course and career-goal comparison](./screenshots/feature-course-and-goal.png)
-3. ![Issue 1 completed courses](./screenshots/issue-1-completed-courses.png)
-4. ![Issue 2 career goal](./screenshots/issue-2-career-goal.png)
-5. ![Issue 3 skill comparison](./screenshots/issue-3-skill-comparison.png)
-6. ![Issue 5 demo session](./screenshots/issue-5-demo-session.png)
+![Empty application state](./screenshots/feature-empty-state.png)
 
-Add the remaining setup and project screenshots to `docs/screenshots/`:
+### Course and career-goal workflow
 
-7. `![VS Code and Copilot](./screenshots/vscode-copilot.png)`
-8. `![Figma MCP connection](./screenshots/figma-mcp.png)`
-9. `![Figma design context](./screenshots/figma-design-context.png)`
-10. `![Sprint 1 Project](./screenshots/sprint-1-project.png)`
-11. `![Git history and pull request](./screenshots/git-history.png)`
+![Course and career-goal workflow](./screenshots/feature-course-and-goal.png)
 
-## Final checklist
+### Completed course
 
-- [x] GitHub repository URL included.
-- [x] GitHub Project URL included and accessible.
-- [x] Figma prototype URL included and accessible.
-- [x] Implemented issue links included.
-- [x] Pull request links included.
-- [x] Copilot access verified.
-- [x] VS Code and Copilot verified.
-- [ ] Figma MCP evidence attached.
-- [x] Sprint 1 Project screenshot attached.
-- [x] Working feature implemented.
-- [x] Tests and production build documented.
-- [x] Browser demonstration screenshots attached.
-- [x] README includes setup, usage, testing, limitations, and AI disclosure.
+![Completed course](./screenshots/issue-1-completed-courses.png)
+
+### Career goal
+
+![Career goal](./screenshots/issue-2-career-goal.png)
+
+### Skill comparison
+
+![Skill comparison](./screenshots/issue-3-skill-comparison.png)
+
+### Local demo access
+
+![Local demo access](./screenshots/issue-5-demo-session.png)
+
+---
+
+## Limitations and future work
+
+The current submission is intentionally a local prototype. It does not yet
+include:
+
+- Real authentication or account isolation
+- Backend services
+- Transcript upload
+- Official catalog data
+- Verified employer requirements
+- Verified skill mastery
+- Project or experience entry
+
+These limitations are also documented in the [README](../README.md).
+
+## Final submission checklist
+
+- [x] Repository URL included
+- [x] GitHub Issues URL included
+- [x] GitHub Project URL included
+- [x] Figma prototype URL included
+- [x] Implemented issue links included
+- [x] Pull request links included
+- [x] Copilot access verified
+- [x] VS Code and Copilot functionality verified
+- [x] Sprint 1 board evidence included
+- [x] Working feature implemented
+- [x] Browser feature evidence included
+- [x] Automated tests and production build documented
+- [x] README setup, usage, testing, limitations, and AI disclosure included
+- [ ] Figma MCP design-context screenshot pending Starter plan rate-limit reset
