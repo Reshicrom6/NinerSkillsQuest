@@ -23,6 +23,21 @@ npm run build
 npm test
 ```
 
+## Sprint 1 verification
+
+The Sprint 1 implementation covers completed-course entry and career-goal
+selection. Run the following commands from a fresh checkout to verify the
+submission:
+
+```sh
+npm install
+npm test
+npm run build
+```
+
+The automated suite currently passes 18 tests across 3 test files, and the
+production build completes successfully with TypeScript checking enabled.
+
 ## Usage
 
 Select **Start local demo** to open the prototype. This is a browser-local demo
