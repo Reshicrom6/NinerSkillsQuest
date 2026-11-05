@@ -425,6 +425,34 @@ select {
   border-radius: 6px;
 }
 
+.learning-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.learning-options h2 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.learning-catalog-note,
+.learning-resource-list {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.learning-resource-list {
+  display: grid;
+  gap: 6px;
+  padding-left: 18px;
+}
+
 .skill-gap h2,
 .skill-gap h3,
 .skill-gap p {
