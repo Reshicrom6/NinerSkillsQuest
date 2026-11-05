@@ -3,7 +3,9 @@ import { careerRoadmaps, employerProfiles } from "./data/careerGoals";
 import { careerGoalStore } from "./state/careerGoalStore";
 import { courseSelectionStore } from "./state/courseSelectionStore";
 import { demoSessionStore } from "./state/demoSessionStore";
+import { getRecommendationsForSkill } from "./data/recommendations";
 import { compareTargetSkills } from "./data/skillGap";
+import { recommendationStore } from "./state/recommendationStore";
 import "./style.css";
 
 function getApplicationRoot(): HTMLDivElement {
@@ -146,6 +148,11 @@ function render(focusTarget?: string): void {
     state.skills.map((skill) => skill.id),
     careerGoal.targetProfile?.skillIds ?? null,
   );
+  recommendationStore.setMissingSkillIds(skillComparison.unmatchedTargetSkillIds);
+  const recommendationState = recommendationStore.getState();
+  const selectedMissingSkillId = recommendationState.selectedSkillId;
+  const selectedRecommendation =
+    selectedMissingSkillId !== null ? getRecommendationsForSkill(selectedMissingSkillId) : null;
   const getSkillNames = (skillIds: string[]) =>
     skillIds.map((skillId) => skillsById.get(skillId)?.name ?? skillId);
   const careerGoalPrompt =
@@ -457,6 +464,78 @@ function render(focusTarget?: string): void {
         }
       </section>
 
+      ${
+        skillComparison.status === "ready" && recommendationState.availableSkillIds.length > 0
+          ? `
+            <section class="recommendations" aria-labelledby="recommendations-title">
+              <h2 id="recommendations-title">Missing-skill recommendations</h2>
+              <div class="field">
+                <label for="recommendation-skill">Choose a missing skill</label>
+                <select id="recommendation-skill" data-focus-target="recommendation-skill">
+                  ${recommendationState.availableSkillIds
+                    .map(
+                      (skillId) => `
+                        <option value="${escapeHtml(skillId)}" ${selectedMissingSkillId === skillId ? "selected" : ""}>
+                          ${escapeHtml(skillsById.get(skillId)?.name ?? skillId)}
+                        </option>`,
+                    )
+                    .join("")}
+                </select>
+              </div>
+              ${
+                selectedRecommendation
+                  ? `
+                    <div class="recommendation-panel">
+                      <div class="recommendation-group">
+                        <h3>UNC Charlotte electives</h3>
+                        ${
+                          selectedRecommendation.electives.length > 0
+                            ? `<ul class="skill-tags">
+                                ${selectedRecommendation.electives
+                                  .map(
+                                    (course) => `
+                                      <li>
+                                        <a href="${escapeHtml(course.url)}" target="_blank" rel="noreferrer">${escapeHtml(course.code)} — ${escapeHtml(course.title)}</a>
+                                      </li>`,
+                                  )
+                                  .join("")}
+                              </ul>`
+                            : `<p class="mapped-empty">No UNC Charlotte electives are available for this skill yet.</p>`
+                        }
+                      </div>
+                      <div class="recommendation-group">
+                        <h3>Practice resources</h3>
+                        ${
+                          selectedRecommendation.resources.length > 0
+                            ? `<ul class="skill-tags goal-skill-tags">
+                                ${selectedRecommendation.resources
+                                  .map(
+                                    (resource) => `
+                                      <li>
+                                        <a href="${escapeHtml(resource.url)}" target="_blank" rel="noreferrer">${escapeHtml(resource.title)}</a>
+                                      </li>`,
+                                  )
+                                  .join("")}
+                              </ul>`
+                            : `<p class="mapped-empty">No practice resources are available for this selected skill yet.</p>`
+                        }
+                      </div>
+                    </div>
+                  `
+                  : `<p class="mapped-empty">No course or resource is available for this selected skill.</p>`
+              }
+            </section>
+          `
+          : skillComparison.status === "ready"
+            ? `
+              <section class="recommendations" aria-labelledby="recommendations-title">
+                <h2 id="recommendations-title">Missing-skill recommendations</h2>
+                <p class="mapped-empty">No missing skills are available for recommendations right now.</p>
+              </section>
+            `
+            : ""
+      }
+
       <button class="button button-primary save-button" type="button">
         Check save status
       </button>
@@ -514,6 +593,14 @@ function render(focusTarget?: string): void {
     draftCourseId = "";
     courseSelectionStore.addCourse(course.id);
     announce(`Added ${course.code} — ${course.title}.`);
+  });
+
+  root.querySelector<HTMLSelectElement>("#recommendation-skill")?.addEventListener("change", (event) => {
+    const select = event.currentTarget;
+    if (select instanceof HTMLSelectElement) {
+      recommendationStore.setSelectedSkillId(select.value || null);
+      render("recommendation-skill");
+    }
   });
 
   root.querySelector<HTMLSelectElement>("#career-roadmap")?.addEventListener("change", (event) => {
