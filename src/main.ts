@@ -2,6 +2,7 @@ import { courses, skillsById } from "./data/catalog";
 import { careerRoadmaps, employerProfiles } from "./data/careerGoals";
 import { careerGoalStore } from "./state/careerGoalStore";
 import { courseSelectionStore } from "./state/courseSelectionStore";
+import { compareSkills } from "./skillComparison";
 import "./style.css";
 
 function getApplicationRoot(): HTMLDivElement {
@@ -115,6 +116,7 @@ function render(focusTarget?: string): void {
     careerGoal.selectedRoadmap?.skillIds
       .map((skillId) => skillsById.get(skillId))
       .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill)) ?? [];
+  const skillComparison = compareSkills(state.skills, targetSkills);
   const careerGoalPrompt =
     !careerGoal.selectedRoadmapId && !careerGoal.selectedEmployerId
       ? "Choose a career roadmap and a Charlotte employer to set your goal."
@@ -384,6 +386,43 @@ function render(focusTarget?: string): void {
         <p class="goal-demo-note">
           Employer profiles and target skill mappings are illustrative local-demo data.
         </p>
+      </section>
+
+      <section class="skill-comparison" aria-labelledby="comparison-title">
+        <div class="career-goal-heading">
+          <h2 id="comparison-title">Review your skills and gaps</h2>
+          <p>Compare skills from completed courses with your selected roadmap.</p>
+        </div>
+        ${
+          state.skills.length === 0
+            ? `<p class="comparison-prompt" role="status">Add a completed course above to see your recorded skills.</p>`
+            : !careerGoal.targetProfile
+              ? `<p class="comparison-prompt" role="status">Choose a career roadmap and employer above to see which target skills are missing.</p>`
+              : targetSkills.length === 0
+                ? `<p class="comparison-prompt" role="status">Your selected roadmap has no mapped target skills yet.</p>`
+                : `<div class="comparison-groups">
+                    <div class="comparison-group is-matched">
+                      <h3>Matching skills · ${skillComparison.matchedSkills.length}</h3>
+                      ${
+                        skillComparison.matchedSkills.length > 0
+                          ? `<ul class="skill-tags" aria-label="Matching skills">
+                              ${skillComparison.matchedSkills.map((skill) => `<li>${escapeHtml(skill.name)}</li>`).join("")}
+                            </ul>`
+                          : `<p class="comparison-empty">No recorded skills match this roadmap yet.</p>`
+                      }
+                    </div>
+                    <div class="comparison-group is-missing">
+                      <h3>Skills to develop · ${skillComparison.missingSkills.length}</h3>
+                      ${
+                        skillComparison.missingSkills.length > 0
+                          ? `<ul class="skill-tags" aria-label="Missing target skills">
+                              ${skillComparison.missingSkills.map((skill) => `<li>${escapeHtml(skill.name)}</li>`).join("")}
+                            </ul>`
+                          : `<p class="comparison-empty">You have recorded every mapped target skill.</p>`
+                      }
+                    </div>
+                  </div>`
+        }
       </section>
 
       <button class="button button-primary save-button" type="button">
