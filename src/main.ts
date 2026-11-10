@@ -92,12 +92,7 @@ function render(focusTarget?: string): void {
 
       <nav class="entry-tabs" aria-label="Experience type">
         <button class="entry-tab is-active" type="button" aria-current="page">Course</button>
-        <button
-          class="entry-tab"
-          type="button"
-          disabled
-          aria-label="Project or experience entry is not included in this demo"
-        >
+        <button class="entry-tab" type="button" data-unimplemented-tab>
           Project or experience
         </button>
       </nav>
@@ -270,6 +265,10 @@ function render(focusTarget?: string): void {
       nextFocus.setSelectionRange(selectionStart, selectionEnd);
     }
   }
+
+  root.querySelector<HTMLButtonElement>("[data-unimplemented-tab]")?.addEventListener("click", () => {
+    window.alert("Feature not implemented");
+  });
 
   const searchInput = root.querySelector<HTMLInputElement>("#course-search");
   searchInput?.addEventListener("input", () => {

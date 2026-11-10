@@ -33,7 +33,8 @@ remove buttons work with the keyboard; course and skill updates are announced to
 assistive technology.
 
 The course-entry screen follows the supplied Figma course panel. The project or
-experience tab and in-progress status are shown only as disabled visual context;
+experience tab shows a "Feature not implemented" alert when clicked, and the
+in-progress status is shown only as disabled visual context;
 this feature handles completed courses only.
 
 ## Limitations
