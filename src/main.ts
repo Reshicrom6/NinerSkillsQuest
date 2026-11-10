@@ -115,6 +115,7 @@ function render(focusTarget?: string): void {
 
   const state = courseSelectionStore.getState();
   const careerGoal = careerGoalStore.getState();
+  const startingPointLabel = careerGoal.selectedRoadmap?.name ?? "career";
   const selectedIds = new Set(state.completedCourseIds);
   const availableCourses = courses.filter((course) => !selectedIds.has(course.id));
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -187,7 +188,7 @@ function render(focusTarget?: string): void {
       <header class="panel-heading">
         <div>
           <h1 id="page-title">Add what you already know</h1>
-          <p>Add completed courses and choose a career goal.</p>
+          <p>Build your ${escapeHtml(startingPointLabel)} starting point.</p>
         </div>
         <div class="session-controls">
           <span class="demo-badge">Local demo session</span>
@@ -252,7 +253,7 @@ function render(focusTarget?: string): void {
           draftCourse
             ? `<section class="course-preview" aria-label="Selected course">
                 <h2>${escapeHtml(draftCourse.code)} — ${escapeHtml(draftCourse.title)}</h2>
-                <p>UNC Charlotte · sample course catalog entry</p>
+                <p>UNC Charlotte · course label from your existing pathway</p>
                 <span class="selected-tag">✓ Selected course</span>
               </section>`
             : ""
@@ -537,7 +538,7 @@ function render(focusTarget?: string): void {
       }
 
       <button class="button button-primary save-button" type="button">
-        Check save status
+        Save and continue →
       </button>
 
       <p class="disclaimer">
