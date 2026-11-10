@@ -2,6 +2,10 @@ import { courses, skillsById } from "./data/catalog";
 import { careerRoadmaps, employerProfiles } from "./data/careerGoals";
 import { careerGoalStore } from "./state/careerGoalStore";
 import { courseSelectionStore } from "./state/courseSelectionStore";
+import { demoSessionStore } from "./state/demoSessionStore";
+import { getRecommendationsForSkill } from "./data/recommendations";
+import { compareTargetSkills } from "./data/skillGap";
+import { recommendationStore } from "./state/recommendationStore";
 import "./style.css";
 
 function getApplicationRoot(): HTMLDivElement {
@@ -84,8 +88,34 @@ function escapeHtml(value: string): string {
 }
 
 function render(focusTarget?: string): void {
+  const session = demoSessionStore.getState();
+  if (!session.signedIn) {
+    root.innerHTML = `
+      <main class="app-shell sign-in-shell" aria-labelledby="page-title">
+        <header class="panel-heading">
+          <div>
+            <h1 id="page-title">Niner Skills Quest</h1>
+            <p>Start a local demo session to explore the course and career-goal prototype.</p>
+          </div>
+          <span class="demo-badge">Local demo</span>
+        </header>
+        <section class="sign-in-card" aria-labelledby="sign-in-title">
+          <h2 id="sign-in-title">Demo access</h2>
+          <p>This prototype does not authenticate identities or protect personal data. Use sample information only.</p>
+          <button class="button button-primary demo-sign-in" type="button">Start local demo</button>
+          ${session.message ? `<p class="storage-message" role="alert">${escapeHtml(session.message)}</p>` : ""}
+        </section>
+      </main>
+    `;
+    root.querySelector<HTMLButtonElement>(".demo-sign-in")?.addEventListener("click", () => {
+      demoSessionStore.startDemoSession();
+    });
+    return;
+  }
+
   const state = courseSelectionStore.getState();
   const careerGoal = careerGoalStore.getState();
+  const startingPointLabel = careerGoal.selectedRoadmap?.name ?? "career";
   const selectedIds = new Set(state.completedCourseIds);
   const availableCourses = courses.filter((course) => !selectedIds.has(course.id));
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -115,6 +145,17 @@ function render(focusTarget?: string): void {
     careerGoal.selectedRoadmap?.skillIds
       .map((skillId) => skillsById.get(skillId))
       .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill)) ?? [];
+  const skillComparison = compareTargetSkills(
+    state.skills.map((skill) => skill.id),
+    careerGoal.targetProfile?.skillIds ?? null,
+  );
+  recommendationStore.setMissingSkillIds(skillComparison.unmatchedTargetSkillIds);
+  const recommendationState = recommendationStore.getState();
+  const selectedMissingSkillId = recommendationState.selectedSkillId;
+  const selectedRecommendation =
+    selectedMissingSkillId !== null ? getRecommendationsForSkill(selectedMissingSkillId) : null;
+  const getSkillNames = (skillIds: string[]) =>
+    skillIds.map((skillId) => skillsById.get(skillId)?.name ?? skillId);
   const careerGoalPrompt =
     !careerGoal.selectedRoadmapId && !careerGoal.selectedEmployerId
       ? "Choose a career roadmap and a Charlotte employer to set your goal."
@@ -147,9 +188,12 @@ function render(focusTarget?: string): void {
       <header class="panel-heading">
         <div>
           <h1 id="page-title">Add what you already know</h1>
-          <p>Add completed courses and choose a career goal.</p>
+          <p>Build your ${escapeHtml(startingPointLabel)} starting point.</p>
         </div>
-        <span class="demo-badge">Local demo</span>
+        <div class="session-controls">
+          <span class="demo-badge">Local demo session</span>
+          <button class="text-button sign-out-button" type="button">Sign out</button>
+        </div>
       </header>
 
       <nav class="entry-tabs" aria-label="Experience type">
@@ -209,7 +253,7 @@ function render(focusTarget?: string): void {
           draftCourse
             ? `<section class="course-preview" aria-label="Selected course">
                 <h2>${escapeHtml(draftCourse.code)} — ${escapeHtml(draftCourse.title)}</h2>
-                <p>UNC Charlotte · sample course catalog entry</p>
+                <p>UNC Charlotte · course label from your existing pathway</p>
                 <span class="selected-tag">✓ Selected course</span>
               </section>`
             : ""
@@ -386,15 +430,122 @@ function render(focusTarget?: string): void {
         </p>
       </section>
 
+      <section class="skill-gap" aria-labelledby="skill-gap-title" aria-live="polite">
+        <h2 id="skill-gap-title">Compare your skills with your goal</h2>
+        ${
+          skillComparison.status === "missing-goal"
+            ? `<p class="goal-prompt">Choose a career roadmap and employer to see how recorded course skills compare.</p>`
+            : skillComparison.status === "empty-target"
+              ? `<p class="goal-prompt">This career goal has no target skills to compare yet.</p>`
+              : `
+                <p class="skill-gap-note">
+                  Course mappings show possible exposure only. A target skill not recorded here does not mean you lack it.
+                </p>
+                <div class="skill-gap-group">
+                  <h3>Matches · ${skillComparison.matchedSkillIds.length}</h3>
+                  ${
+                    skillComparison.matchedSkillIds.length > 0
+                      ? `<ul class="skill-tags" aria-label="Target skills matched by recorded courses">
+                          ${getSkillNames(skillComparison.matchedSkillIds).map((name) => `<li>${escapeHtml(name)}</li>`).join("")}
+                        </ul>`
+                      : `<p class="mapped-empty">No target skills match the currently recorded course skills.</p>`
+                  }
+                </div>
+                <div class="skill-gap-group">
+                  <h3>Not recorded from courses · ${skillComparison.unmatchedTargetSkillIds.length}</h3>
+                  ${
+                    skillComparison.unmatchedTargetSkillIds.length > 0
+                      ? `<ul class="skill-tags goal-skill-tags" aria-label="Target skills not recorded from courses">
+                          ${getSkillNames(skillComparison.unmatchedTargetSkillIds).map((name) => `<li>${escapeHtml(name)}</li>`).join("")}
+                        </ul>`
+                      : `<p class="mapped-empty">Every target skill is represented in the current course mappings.</p>`
+                  }
+                </div>
+              `
+        }
+      </section>
+
+      ${
+        skillComparison.status === "ready" && recommendationState.availableSkillIds.length > 0
+          ? `
+            <section class="recommendations" aria-labelledby="recommendations-title">
+              <h2 id="recommendations-title">Missing-skill recommendations</h2>
+              <div class="field">
+                <label for="recommendation-skill">Choose a missing skill</label>
+                <select id="recommendation-skill" data-focus-target="recommendation-skill">
+                  ${recommendationState.availableSkillIds
+                    .map(
+                      (skillId) => `
+                        <option value="${escapeHtml(skillId)}" ${selectedMissingSkillId === skillId ? "selected" : ""}>
+                          ${escapeHtml(skillsById.get(skillId)?.name ?? skillId)}
+                        </option>`,
+                    )
+                    .join("")}
+                </select>
+              </div>
+              ${
+                selectedRecommendation
+                  ? `
+                    <div class="recommendation-panel">
+                      <div class="recommendation-group">
+                        <h3>UNC Charlotte electives</h3>
+                        ${
+                          selectedRecommendation.electives.length > 0
+                            ? `<ul class="skill-tags">
+                                ${selectedRecommendation.electives
+                                  .map(
+                                    (course) => `
+                                      <li>
+                                        <a href="${escapeHtml(course.url)}" target="_blank" rel="noreferrer">${escapeHtml(course.code)} — ${escapeHtml(course.title)}</a>
+                                      </li>`,
+                                  )
+                                  .join("")}
+                              </ul>`
+                            : `<p class="mapped-empty">No UNC Charlotte electives are available for this skill yet.</p>`
+                        }
+                      </div>
+                      <div class="recommendation-group">
+                        <h3>Practice resources</h3>
+                        ${
+                          selectedRecommendation.resources.length > 0
+                            ? `<ul class="skill-tags goal-skill-tags">
+                                ${selectedRecommendation.resources
+                                  .map(
+                                    (resource) => `
+                                      <li>
+                                        <a href="${escapeHtml(resource.url)}" target="_blank" rel="noreferrer">${escapeHtml(resource.title)}</a>
+                                      </li>`,
+                                  )
+                                  .join("")}
+                              </ul>`
+                            : `<p class="mapped-empty">No practice resources are available for this selected skill yet.</p>`
+                        }
+                      </div>
+                    </div>
+                  `
+                  : `<p class="mapped-empty">No course or resource is available for this selected skill.</p>`
+              }
+            </section>
+          `
+          : skillComparison.status === "ready"
+            ? `
+              <section class="recommendations" aria-labelledby="recommendations-title">
+                <h2 id="recommendations-title">Missing-skill recommendations</h2>
+                <p class="mapped-empty">No missing skills are available for recommendations right now.</p>
+              </section>
+            `
+            : ""
+      }
+
       <button class="button button-primary save-button" type="button">
-        Check save status
+        Save and continue →
       </button>
 
       <p class="disclaimer">
         Coursework suggests exposure, not verified mastery. Course availability and
         requirements must be checked in the official catalog.
       </p>
-      ${[state.persistenceMessage, careerGoal.persistenceMessage]
+      ${[session.message, state.persistenceMessage, careerGoal.persistenceMessage]
         .filter((message): message is string => message !== null)
         .map((message) => `<p class="storage-message" role="status">${escapeHtml(message)}</p>`)
         .join("")}
@@ -445,6 +596,14 @@ function render(focusTarget?: string): void {
     announce(`Added ${course.code} — ${course.title}.`);
   });
 
+  root.querySelector<HTMLSelectElement>("#recommendation-skill")?.addEventListener("change", (event) => {
+    const select = event.currentTarget;
+    if (select instanceof HTMLSelectElement) {
+      recommendationStore.setSelectedSkillId(select.value || null);
+      render("recommendation-skill");
+    }
+  });
+
   root.querySelector<HTMLSelectElement>("#career-roadmap")?.addEventListener("change", (event) => {
     const select = event.currentTarget;
     if (select instanceof HTMLSelectElement) {
@@ -487,8 +646,13 @@ function render(focusTarget?: string): void {
   root.querySelector<HTMLButtonElement>(".save-button")?.addEventListener("click", () => {
     announce(getSaveAnnouncementText(state, careerGoal));
   });
+
+  root.querySelector<HTMLButtonElement>(".sign-out-button")?.addEventListener("click", () => {
+    demoSessionStore.signOut();
+  });
 }
 
 courseSelectionStore.subscribe(() => render("course-search"));
 careerGoalStore.subscribe(() => render());
+demoSessionStore.subscribe(() => render());
 render();

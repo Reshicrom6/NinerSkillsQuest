@@ -33,3 +33,21 @@ export interface TargetProfile {
   employerId: string;
   skillIds: string[];
 }
+
+export interface CourseRecommendation {
+  code: string;
+  title: string;
+  url: string;
+}
+
+export interface PracticeResource {
+  title: string;
+  url: string;
+}
+
+export interface SkillRecommendation {
+  skillId: string;
+  skillName: string;
+  electives: CourseRecommendation[];
+  resources: PracticeResource[];
+}

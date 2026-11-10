@@ -1,9 +1,10 @@
 # Niner Skills Quest
 
-A local demo for selecting completed courses and seeing their suggested skills.
-Students can also choose an illustrative career roadmap and Charlotte employer
-to define a local career goal. Course and roadmap skills represent possible
-exposure or targets, not verified skill mastery.
+A local demo for selecting completed courses, recording self-reported
+experiences, and saving next-step recommendations in an itinerary. Students can
+also choose an illustrative career roadmap and Charlotte employer to define a
+local career goal. Course and roadmap skills represent possible exposure or
+targets, not verified skill mastery.
 
 ## Setup
 
@@ -23,7 +24,34 @@ npm run build
 npm test
 ```
 
+## Sprint 1 verification
+
+The Sprint 1 implementation covers completed-course entry and career-goal
+selection. Run the following commands from a fresh checkout to verify the
+submission:
+
+```sh
+npm install
+npm test
+npm run build
+```
+
+The automated suite currently passes 27 tests across 5 test files, and the
+production build completes successfully with TypeScript checking enabled.
+
 ## Usage
+
+Select **Start local demo** to open the prototype. This is a browser-local demo
+session, not identity verification or authentication. Use sample information
+only. Sign out to return to the start screen; course and goal data remain in
+this browser and are not isolated by a real account.
+
+Record a project, employment, volunteer, or other experience with a title and
+one or more supported skills. These skills are explicitly self-reported, not
+verified. Edit or remove records at any time; their skills are combined with
+course-mapped skills for the goal comparison, and removing one source does not
+remove skills still supported by another source. Experiences are stored
+separately in browser `localStorage`.
 
 Search the supported demo courses by code or title, choose a result, and select
 **Add course**. Remove individual selections at any time. Mapped skills update
@@ -36,27 +64,71 @@ assistive technology. Choose a career roadmap and one of the generic Charlotte
 employer profiles in the career goal section. The demo roadmaps are Backend
 Developer and Full-stack Developer; the current goal and roadmap skill
 targets update immediately and persist in `localStorage`. The roadmap and
-employer selectors are keyboard accessible.
+employer selectors are keyboard accessible. With a complete goal, the skill
+comparison separates target matches across recorded courses and self-reported
+experiences from targets not recorded in the inventory. Unmatched targets are
+not treated as proof of missing ability. A target skill not recorded in the
+inventory can be selected to see a
+curated learning resource and a topic to investigate in the official UNC
+Charlotte catalog. Catalog topics are suggestions, not confirmed current
+elective offerings; check the current catalog and prerequisites.
+For each unrecorded target skill, the demo can also show sample course
+recommendations, project ideas, and practice resources. Save any of these to
+**Your itinerary** to see its name, type, related skill, and available link.
+Duplicate saves are prevented; activities can be removed and the remaining
+itinerary reloads from this browser's `localStorage`.
+The optional synthetic transcript sample is parsed in the browser. Review
+course candidates and confirm them before import; only confirmed supported
+course IDs are saved.
 
-The course-entry screen follows the supplied Figma course panel. The project or
-experience tab and in-progress status are shown only as disabled visual context;
-this feature handles completed courses only.
+The course-entry screen follows the supplied Figma course panel. In-progress
+course status remains outside this completed-course demo.
+
+## Assignment evidence
+
+Shared links and assignment resources are collected in
+[docs/assignment-deliverables.md](./docs/assignment-deliverables.md).
+Individual contribution details are documented in
+[docs/kaushal-details.md](./docs/kaushal-details.md). Shared screenshots and
+project evidence are included in [docs/assignment-deliverables.md](./docs/assignment-deliverables.md).
+
+Screenshots include:
+
+- [Completed-course workflow](./docs/screenshots/issue-1-completed-courses.png)
+- [Career-goal selection](./docs/screenshots/issue-2-career-goal.png)
+- [Skill comparison](./docs/screenshots/issue-3-skill-comparison.png)
+- [Local demo session](./docs/screenshots/issue-5-demo-session.png)
+- [GitHub Issues](./docs/screenshots/githubIssues.png)
+- [Sprint 1 Project board](./docs/screenshots/githubProjectboard.png)
+- [Copilot account verification](./docs/screenshots/copilotaccountverification.png)
+- [Copilot functionality](./docs/screenshots/copilotVerfication.png)
+
+The evidence document also contains the repository, GitHub Project, Figma,
+issue, pull request, test, and build links required for the lab submission.
 
 ## Limitations
 
 The course catalog and mappings are illustrative, not official catalog data.
 Coursework suggestions are not verified mastery, and roadmap skill targets and
 employer profiles are fictional demo data, not verified hiring requirements or
-employer endorsements. Authentication, transcript upload, and backend services
-are not included.
+employer endorsements. Itinerary recommendations are illustrative; course links
+lead to the catalog root and do not confirm current offerings. The demo session
+does not authenticate users or isolate one student's data from another; saved
+itineraries are local to this browser and are not tied to an account or synced
+across devices. Server-side transcript processing and backend services are not
+included. Transcript parsing supports only the bundled synthetic sample format;
+do not upload a real transcript or personal information. Cancel or discard a
+transcript preview before confirmation to leave saved coursework unchanged.
 
 ## AI-use disclosure
 
-GitHub Copilot assisted with the course-entry and career-goal implementation,
-tests, and project documentation. Figma MCP was used to access the referenced
-design page and export its screenshot; it did not provide inspectable
-goal-selection layers, so the career-goal UI follows existing application
-patterns and the issue acceptance criteria rather than a verified frame
-specification. The team should review the implementation and all illustrative
-course mappings, roadmap targets, and employer profiles before treating them as
+GitHub Copilot assisted with the course-entry, career-goal, transcript,
+experience, itinerary, test, and documentation work. Figma MCP was used earlier
+to access the referenced course design page and export its screenshot; it did
+not provide inspectable goal-selection layers. Itinerary frame metadata could
+not be inspected because the Figma MCP Starter-plan tool-call limit was
+reached, so that UI follows existing application patterns and the issue
+criteria rather than a verified frame specification. The team should review
+the implementation and all illustrative course mappings, roadmap targets,
+employer profiles, and activity recommendations before treating them as
 authoritative. No teammate review or approval is claimed here.
