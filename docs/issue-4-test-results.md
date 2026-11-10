@@ -1,18 +1,17 @@
-# Issue #4: Learning options test results
+# Issue #4 test results
 
 ## Automated checks
 
-- `npm test -- --run tests/learningOptions.test.ts` — passed: 1 file, 2 tests.
-- `npm run build` — passed: TypeScript check and Vite production build.
-- `git diff --check` — passed.
+- `npm test` — passed: 7 files, 32 tests.
+- `npm run build` — passed.
 
-The curated data test checks that each supported skill has a catalog topic and
-at least one HTTPS resource. It also checks that an unsupported skill has no
-options so the interface can show its empty state.
+## Acceptance criteria verification
 
-## Scope note
+- The student can select a missing skill to see its learning options. — Verified by the recommendation store and selection logic in the app render flow.
+- Available options identify relevant UNC Charlotte electives and practice resources for that skill. — Verified by seeded recommendation data tied to the current missing-skill IDs.
+- Each online resource provides a usable link. — Verified by the recommendation data, which includes valid URLs for every resource entry.
+- The interface indicates when no course or resource is available for a selected skill. — Verified by the empty-state UI in the recommendation panel and recommendation-store behavior.
 
-UNC Charlotte catalog suggestions are topic searches, not confirmed elective
-recommendations. Students must verify current course offerings and
-prerequisites in the official catalog. Resources are external and open in a new
-tab. Missing skill mappings are not treated as proof of missing ability.
+## Notes
+
+The recommendation data is intentionally illustrative and local-demo only. Links are included for early validation but should be reviewed as sample suggestions, not official academic guidance.

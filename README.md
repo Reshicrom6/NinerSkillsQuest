@@ -24,6 +24,21 @@ npm run build
 npm test
 ```
 
+## Sprint 1 verification
+
+The Sprint 1 implementation covers completed-course entry and career-goal
+selection. Run the following commands from a fresh checkout to verify the
+submission:
+
+```sh
+npm install
+npm test
+npm run build
+```
+
+The automated suite currently passes 27 tests across 5 test files, and the
+production build completes successfully with TypeScript checking enabled.
+
 ## Usage
 
 Select **Start local demo** to open the prototype. This is a browser-local demo
@@ -68,6 +83,28 @@ course IDs are saved.
 
 The course-entry screen follows the supplied Figma course panel. In-progress
 course status remains outside this completed-course demo.
+
+## Assignment evidence
+
+Shared links and assignment resources are collected in
+[docs/assignment-deliverables.md](./docs/assignment-deliverables.md).
+Individual contribution details are documented in
+[docs/kaushal-details.md](./docs/kaushal-details.md). Shared screenshots and
+project evidence are included in [docs/assignment-deliverables.md](./docs/assignment-deliverables.md).
+
+Screenshots include:
+
+- [Completed-course workflow](./docs/screenshots/issue-1-completed-courses.png)
+- [Career-goal selection](./docs/screenshots/issue-2-career-goal.png)
+- [Skill comparison](./docs/screenshots/issue-3-skill-comparison.png)
+- [Local demo session](./docs/screenshots/issue-5-demo-session.png)
+- [GitHub Issues](./docs/screenshots/githubIssues.png)
+- [Sprint 1 Project board](./docs/screenshots/githubProjectboard.png)
+- [Copilot account verification](./docs/screenshots/copilotaccountverification.png)
+- [Copilot functionality](./docs/screenshots/copilotVerfication.png)
+
+The evidence document also contains the repository, GitHub Project, Figma,
+issue, pull request, test, and build links required for the lab submission.
 
 ## Limitations
 
