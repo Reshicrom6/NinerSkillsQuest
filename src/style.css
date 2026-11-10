@@ -50,6 +50,42 @@ select {
   gap: 12px;
 }
 
+.session-controls {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.sign-in-shell {
+  justify-content: center;
+}
+
+.sign-in-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.sign-in-card h2,
+.sign-in-card p {
+  margin: 0;
+}
+
+.sign-in-card h2 {
+  font-size: 15px;
+}
+
+.sign-in-card p {
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .panel-heading h1 {
   margin: 0 0 4px;
   color: var(--color-text);
@@ -380,6 +416,41 @@ select {
   background: #fff;
 }
 
+.skill-gap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.skill-gap h2,
+.skill-gap h3,
+.skill-gap p {
+  margin: 0;
+}
+
+.skill-gap h2 {
+  font-size: 13px;
+}
+
+.skill-gap h3 {
+  font-size: 11px;
+}
+
+.skill-gap-note {
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.skill-gap-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
 .career-goal-heading {
   display: flex;
   flex-direction: column;
@@ -400,6 +471,58 @@ select {
   color: var(--color-muted);
   font-size: 11px;
   line-height: 1.4;
+}
+
+.skill-comparison {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.comparison-prompt,
+.comparison-empty {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.comparison-groups {
+  display: grid;
+  gap: 12px;
+}
+
+.comparison-group {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.comparison-group h3 {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.comparison-group.is-matched {
+  background: var(--color-green-soft);
+}
+
+.comparison-group.is-matched h3 {
+  color: var(--color-green);
+}
+
+.comparison-group.is-missing {
+  background: var(--color-purple-soft);
+}
+
+.comparison-group.is-missing h3 {
+  color: var(--color-purple);
 }
 
 .goal-fields {
@@ -452,6 +575,56 @@ select {
 
 .goal-demo-note {
   font-size: 10px;
+}
+
+.recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.recommendations h2,
+.recommendations h3,
+.recommendations p {
+  margin: 0;
+}
+
+.recommendations h2 {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.recommendation-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recommendation-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #faf9f6;
+}
+
+.recommendation-group h3 {
+  color: var(--color-text);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.recommendation-group a {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .added-skills {
