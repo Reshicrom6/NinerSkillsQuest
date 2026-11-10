@@ -1,11 +1,11 @@
 import { courses, skillsById } from "./data/catalog";
 import { careerRoadmaps, employerProfiles } from "./data/careerGoals";
-import { courseCatalogUrl, getLearningOptions } from "./data/learningOptions";
-import { parseTranscriptPdf, type TranscriptCourseCandidate } from "./data/transcript";
 import { careerGoalStore } from "./state/careerGoalStore";
 import { courseSelectionStore } from "./state/courseSelectionStore";
 import { demoSessionStore } from "./state/demoSessionStore";
+import { getRecommendationsForSkill } from "./data/recommendations";
 import { compareTargetSkills } from "./data/skillGap";
+import { recommendationStore } from "./state/recommendationStore";
 import "./style.css";
 
 function getApplicationRoot(): HTMLDivElement {
@@ -20,12 +20,6 @@ const root = getApplicationRoot();
 const announcer = document.querySelector<HTMLDivElement>("#announcer");
 let searchQuery = "";
 let draftCourseId = "";
-let selectedLearningSkillId = "";
-let transcriptCandidates: TranscriptCourseCandidate[] = [];
-let selectedTranscriptCourseIds = new Set<string>();
-let transcriptMessage: string | null = null;
-let transcriptIsParsing = false;
-let transcriptAttempt = 0;
 
 function announce(message: string): void {
   if (announcer) {
@@ -93,55 +87,6 @@ function escapeHtml(value: string): string {
   });
 }
 
-async function reviewTranscript(file: File): Promise<void> {
-  const attempt = ++transcriptAttempt;
-  transcriptCandidates = [];
-  selectedTranscriptCourseIds = new Set();
-  transcriptMessage = "Reading this PDF in your browser. Nothing has been saved.";
-  transcriptIsParsing = true;
-  render();
-
-  try {
-    const candidates = await parseTranscriptPdf(file, courses);
-    if (attempt !== transcriptAttempt) {
-      return;
-    }
-    transcriptCandidates = candidates;
-    selectedTranscriptCourseIds = new Set(
-      candidates
-        .flatMap((candidate) =>
-          candidate.status === "candidate" && candidate.courseId ? [candidate.courseId] : [],
-        ),
-    );
-    transcriptMessage =
-      candidates.length > 0
-        ? "Review the extracted courses. Nothing changes until you confirm."
-        : "No recognizable course records were found. Use manual course entry instead.";
-  } catch (error) {
-    if (attempt !== transcriptAttempt) {
-      return;
-    }
-    transcriptMessage =
-      error instanceof Error
-        ? `${error.message} Use manual course entry instead.`
-        : "The PDF could not be read. Use manual course entry instead.";
-  } finally {
-    if (attempt === transcriptAttempt) {
-      transcriptIsParsing = false;
-      render();
-    }
-  }
-}
-
-function discardTranscriptReview(): void {
-  transcriptAttempt += 1;
-  transcriptCandidates = [];
-  selectedTranscriptCourseIds = new Set();
-  transcriptMessage = "Transcript preview discarded. Saved courses were not changed.";
-  transcriptIsParsing = false;
-  render();
-}
-
 function render(focusTarget?: string): void {
   const session = demoSessionStore.getState();
   if (!session.signedIn) {
@@ -170,6 +115,7 @@ function render(focusTarget?: string): void {
 
   const state = courseSelectionStore.getState();
   const careerGoal = careerGoalStore.getState();
+  const startingPointLabel = careerGoal.selectedRoadmap?.name ?? "career";
   const selectedIds = new Set(state.completedCourseIds);
   const availableCourses = courses.filter((course) => !selectedIds.has(course.id));
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -203,14 +149,13 @@ function render(focusTarget?: string): void {
     state.skills.map((skill) => skill.id),
     careerGoal.targetProfile?.skillIds ?? null,
   );
+  recommendationStore.setMissingSkillIds(skillComparison.unmatchedTargetSkillIds);
+  const recommendationState = recommendationStore.getState();
+  const selectedMissingSkillId = recommendationState.selectedSkillId;
+  const selectedRecommendation =
+    selectedMissingSkillId !== null ? getRecommendationsForSkill(selectedMissingSkillId) : null;
   const getSkillNames = (skillIds: string[]) =>
     skillIds.map((skillId) => skillsById.get(skillId)?.name ?? skillId);
-  if (!skillComparison.unmatchedTargetSkillIds.includes(selectedLearningSkillId)) {
-    selectedLearningSkillId = "";
-  }
-  const selectedLearningOptions = selectedLearningSkillId
-    ? getLearningOptions(selectedLearningSkillId)
-    : null;
   const careerGoalPrompt =
     !careerGoal.selectedRoadmapId && !careerGoal.selectedEmployerId
       ? "Choose a career roadmap and a Charlotte employer to set your goal."
@@ -243,7 +188,7 @@ function render(focusTarget?: string): void {
       <header class="panel-heading">
         <div>
           <h1 id="page-title">Add what you already know</h1>
-          <p>Add completed courses and choose a career goal.</p>
+          <p>Build your ${escapeHtml(startingPointLabel)} starting point.</p>
         </div>
         <div class="session-controls">
           <span class="demo-badge">Local demo session</span>
@@ -308,7 +253,7 @@ function render(focusTarget?: string): void {
           draftCourse
             ? `<section class="course-preview" aria-label="Selected course">
                 <h2>${escapeHtml(draftCourse.code)} — ${escapeHtml(draftCourse.title)}</h2>
-                <p>UNC Charlotte · sample course catalog entry</p>
+                <p>UNC Charlotte · course label from your existing pathway</p>
                 <span class="selected-tag">✓ Selected course</span>
               </section>`
             : ""
@@ -400,64 +345,6 @@ function render(focusTarget?: string): void {
               ? ""
               : `<p class="mapped-empty">No courses selected yet. Add a supported course to see its mapped skills.</p>`
         }
-      </section>
-
-      <section class="transcript-panel" aria-labelledby="transcript-title">
-        <h2 id="transcript-title">Review an unofficial transcript</h2>
-        <p class="transcript-privacy">
-          Privacy notice: this local demo parses the PDF in your browser. The raw file and extracted details are not uploaded or saved.
-          Only course IDs you confirm are added to this browser's course list.
-        </p>
-        <label class="transcript-picker-label" for="transcript-file">Choose a PDF transcript</label>
-        <input id="transcript-file" type="file" accept="application/pdf,.pdf" ${transcriptIsParsing ? "disabled" : ""} />
-        <div class="transcript-drop" id="transcript-drop">
-          <p>Or drag a PDF here to review it.</p>
-          <button class="text-button sample-transcript-button" type="button" ${transcriptIsParsing ? "disabled" : ""}>
-            Load synthetic sample PDF
-          </button>
-        </div>
-        ${
-          transcriptMessage
-            ? `<p class="transcript-message" role="status">${escapeHtml(transcriptMessage)}</p>`
-            : ""
-        }
-        ${
-          transcriptCandidates.length > 0
-            ? `<ul class="transcript-candidate-list">
-                ${transcriptCandidates
-                  .map((candidate, index) => {
-                    if (candidate.status !== "candidate" || !candidate.courseId) {
-                      return `<li class="transcript-excluded">
-                        <strong>${escapeHtml(candidate.code)} ${escapeHtml(candidate.title)}</strong>
-                        ${candidate.grade ? ` · grade ${escapeHtml(candidate.grade)}` : ""}
-                        <span>${escapeHtml(candidate.reason ?? "Not eligible for import.")}</span>
-                      </li>`;
-                    }
-                    const checkboxId = `transcript-course-${index}`;
-                    return `<li class="transcript-candidate">
-                      <input
-                        id="${checkboxId}"
-                        type="checkbox"
-                        data-transcript-course="${escapeHtml(candidate.courseId)}"
-                        ${selectedTranscriptCourseIds.has(candidate.courseId) ? "checked" : ""}
-                      />
-                      <label for="${checkboxId}">
-                        ${escapeHtml(candidate.code)} ${escapeHtml(candidate.title)}
-                        ${candidate.grade ? ` · grade ${escapeHtml(candidate.grade)}` : ""}
-                      </label>
-                    </li>`;
-                  })
-                  .join("")}
-              </ul>
-              <div class="transcript-actions">
-                <button class="button button-primary confirm-transcript" type="button" ${
-                  transcriptIsParsing || selectedTranscriptCourseIds.size === 0 ? "disabled" : ""
-                }>Add selected courses</button>
-                <button class="text-button discard-transcript" type="button">Discard preview</button>
-              </div>`
-            : ""
-        }
-        <button class="text-button manual-course-entry" type="button">Continue with manual course entry</button>
       </section>
 
       <section class="career-goal" aria-labelledby="career-goal-title">
@@ -578,63 +465,80 @@ function render(focusTarget?: string): void {
         }
       </section>
 
-      <section class="learning-options" aria-labelledby="learning-options-title">
-        <h2 id="learning-options-title">Explore learning options</h2>
-        ${
-          skillComparison.status !== "ready"
-            ? `<p class="goal-prompt">Choose a complete career goal before exploring options for target skills not recorded from courses.</p>`
-            : skillComparison.unmatchedTargetSkillIds.length === 0
-              ? `<p class="mapped-empty">There are no target skills currently unmatched by the course list.</p>`
-              : `
-                <div class="field">
-                  <label for="learning-skill">Choose a target skill not recorded from courses</label>
-                  <select id="learning-skill" data-focus-target="learning-skill">
-                    <option value="">Select a skill</option>
-                    ${skillComparison.unmatchedTargetSkillIds
-                      .map((skillId) => `
-                        <option value="${escapeHtml(skillId)}" ${selectedLearningSkillId === skillId ? "selected" : ""}>
+      ${
+        skillComparison.status === "ready" && recommendationState.availableSkillIds.length > 0
+          ? `
+            <section class="recommendations" aria-labelledby="recommendations-title">
+              <h2 id="recommendations-title">Missing-skill recommendations</h2>
+              <div class="field">
+                <label for="recommendation-skill">Choose a missing skill</label>
+                <select id="recommendation-skill" data-focus-target="recommendation-skill">
+                  ${recommendationState.availableSkillIds
+                    .map(
+                      (skillId) => `
+                        <option value="${escapeHtml(skillId)}" ${selectedMissingSkillId === skillId ? "selected" : ""}>
                           ${escapeHtml(skillsById.get(skillId)?.name ?? skillId)}
-                        </option>`)
-                      .join("")}
-                  </select>
-                </div>
-                ${
-                  selectedLearningSkillId
-                    ? selectedLearningOptions
-                      ? `
+                        </option>`,
+                    )
+                    .join("")}
+                </select>
+              </div>
+              ${
+                selectedRecommendation
+                  ? `
+                    <div class="recommendation-panel">
+                      <div class="recommendation-group">
+                        <h3>UNC Charlotte electives</h3>
                         ${
-                          selectedLearningOptions.catalogSearchTerm
-                            ? `<p class="learning-catalog-note">
-                                Suggested catalog topic: ${escapeHtml(selectedLearningOptions.catalogSearchTerm)}.
-                                Verify current offerings and prerequisites in the
-                                <a href="${courseCatalogUrl}" target="_blank" rel="noopener noreferrer">UNC Charlotte catalog</a>.
-                              </p>`
-                            : ""
-                        }
-                        ${
-                          selectedLearningOptions.resources.length > 0
-                            ? `<ul class="learning-resource-list">
-                                ${selectedLearningOptions.resources
-                                  .map((resource) => `
-                                    <li>
-                                      <a href="${escapeHtml(resource.url)}" target="_blank" rel="noopener noreferrer">
-                                        ${escapeHtml(resource.title)}
-                                      </a>
-                                    </li>`)
+                          selectedRecommendation.electives.length > 0
+                            ? `<ul class="skill-tags">
+                                ${selectedRecommendation.electives
+                                  .map(
+                                    (course) => `
+                                      <li>
+                                        <a href="${escapeHtml(course.url)}" target="_blank" rel="noreferrer">${escapeHtml(course.code)} — ${escapeHtml(course.title)}</a>
+                                      </li>`,
+                                  )
                                   .join("")}
                               </ul>`
-                            : `<p class="mapped-empty">No practice resources are available for this skill yet.</p>`
+                            : `<p class="mapped-empty">No UNC Charlotte electives are available for this skill yet.</p>`
                         }
-                      `
-                      : `<p class="mapped-empty" role="status">No course or practice resources are mapped to this skill yet.</p>`
-                    : ""
-                }
-              `
-        }
-      </section>
+                      </div>
+                      <div class="recommendation-group">
+                        <h3>Practice resources</h3>
+                        ${
+                          selectedRecommendation.resources.length > 0
+                            ? `<ul class="skill-tags goal-skill-tags">
+                                ${selectedRecommendation.resources
+                                  .map(
+                                    (resource) => `
+                                      <li>
+                                        <a href="${escapeHtml(resource.url)}" target="_blank" rel="noreferrer">${escapeHtml(resource.title)}</a>
+                                      </li>`,
+                                  )
+                                  .join("")}
+                              </ul>`
+                            : `<p class="mapped-empty">No practice resources are available for this selected skill yet.</p>`
+                        }
+                      </div>
+                    </div>
+                  `
+                  : `<p class="mapped-empty">No course or resource is available for this selected skill.</p>`
+              }
+            </section>
+          `
+          : skillComparison.status === "ready"
+            ? `
+              <section class="recommendations" aria-labelledby="recommendations-title">
+                <h2 id="recommendations-title">Missing-skill recommendations</h2>
+                <p class="mapped-empty">No missing skills are available for recommendations right now.</p>
+              </section>
+            `
+            : ""
+      }
 
       <button class="button button-primary save-button" type="button">
-        Check save status
+        Save and continue →
       </button>
 
       <p class="disclaimer">
@@ -669,78 +573,6 @@ function render(focusTarget?: string): void {
     render("course-search");
   });
 
-  root.querySelector<HTMLInputElement>("#transcript-file")?.addEventListener("change", (event) => {
-    const input = event.currentTarget;
-    if (input instanceof HTMLInputElement) {
-      const file = input.files?.[0];
-      input.value = "";
-      if (file) {
-        void reviewTranscript(file);
-      }
-    }
-  });
-
-  const transcriptDrop = root.querySelector<HTMLDivElement>("#transcript-drop");
-  transcriptDrop?.addEventListener("dragover", (event) => event.preventDefault());
-  transcriptDrop?.addEventListener("drop", (event) => {
-    event.preventDefault();
-    const file = event.dataTransfer?.files[0];
-    if (file) {
-      void reviewTranscript(file);
-    }
-  });
-
-  root.querySelector<HTMLButtonElement>(".sample-transcript-button")?.addEventListener("click", async () => {
-    try {
-      const response = await fetch("/synthetic-transcript.pdf");
-      if (!response.ok) {
-        throw new Error("The sample transcript could not be loaded.");
-      }
-      const blob = await response.blob();
-      await reviewTranscript(new File([blob], "synthetic-transcript.pdf", { type: "application/pdf" }));
-    } catch (error) {
-      transcriptMessage =
-        error instanceof Error ? error.message : "The sample transcript could not be loaded.";
-      render();
-    }
-  });
-
-  root.querySelectorAll<HTMLInputElement>("[data-transcript-course]").forEach((checkbox) => {
-    checkbox.addEventListener("change", () => {
-      const courseId = checkbox.dataset.transcriptCourse;
-      if (!courseId) {
-        return;
-      }
-      if (checkbox.checked) {
-        selectedTranscriptCourseIds.add(courseId);
-      } else {
-        selectedTranscriptCourseIds.delete(courseId);
-      }
-      render();
-    });
-  });
-
-  root.querySelector<HTMLButtonElement>(".confirm-transcript")?.addEventListener("click", () => {
-    const added = courseSelectionStore.addCourses([...selectedTranscriptCourseIds]);
-    transcriptMessage =
-      added.length > 0
-        ? `${added.length} course${added.length === 1 ? "" : "s"} added. Existing courses were not duplicated.`
-        : "No new courses were added. Existing selections were not duplicated.";
-    transcriptCandidates = [];
-    selectedTranscriptCourseIds = new Set();
-    announce(transcriptMessage);
-    render();
-  });
-
-  root.querySelector<HTMLButtonElement>(".discard-transcript")?.addEventListener("click", () => {
-    discardTranscriptReview();
-  });
-
-  root.querySelector<HTMLButtonElement>(".manual-course-entry")?.addEventListener("click", () => {
-    root.querySelector<HTMLInputElement>("#course-search")?.focus();
-    root.querySelector<HTMLInputElement>("#course-search")?.scrollIntoView({ behavior: "smooth" });
-  });
-
   root.querySelectorAll<HTMLButtonElement>("[data-select-course]").forEach((button) => {
     button.addEventListener("click", () => {
       const courseId = button.dataset.selectCourse;
@@ -762,6 +594,14 @@ function render(focusTarget?: string): void {
     draftCourseId = "";
     courseSelectionStore.addCourse(course.id);
     announce(`Added ${course.code} — ${course.title}.`);
+  });
+
+  root.querySelector<HTMLSelectElement>("#recommendation-skill")?.addEventListener("change", (event) => {
+    const select = event.currentTarget;
+    if (select instanceof HTMLSelectElement) {
+      recommendationStore.setSelectedSkillId(select.value || null);
+      render("recommendation-skill");
+    }
   });
 
   root.querySelector<HTMLSelectElement>("#career-roadmap")?.addEventListener("change", (event) => {
@@ -787,14 +627,6 @@ function render(focusTarget?: string): void {
         ? ` for ${updatedGoal.selectedRoadmap.name}.`
         : ".";
       announce(`Career employer changed to ${employerName}${roadmapStatus}`);
-    }
-  });
-
-  root.querySelector<HTMLSelectElement>("#learning-skill")?.addEventListener("change", (event) => {
-    const select = event.currentTarget;
-    if (select instanceof HTMLSelectElement) {
-      selectedLearningSkillId = select.value;
-      render("learning-skill");
     }
   });
 
