@@ -44,6 +44,9 @@ individual contributions to be reviewed independently.
 - [Issue #2 plan](./issue-2-plan.md)
 - [Issue #2 test results](./issue-2-test-results.md)
 - [Issue #3 test results](./issue-3-test-results.md)
+- [Issue #4 plan](./issue-4-plan.md)
+- [Issue #4 test results](./issue-4-test-results.md)
+- [Carter's individual details](./carter-details.md)
 - [Kaushal's individual details](./kaushal-details.md)
 
 ## Shared project evidence
