@@ -538,7 +538,7 @@ function render(focusTarget?: string): void {
       }
 
       <button class="button button-primary save-button" type="button">
-        Save and continue →
+        Check save status
       </button>
 
       <p class="disclaimer">
