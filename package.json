@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "node server/api.mjs",
     "build": "tsc -b && vite build",
     "test": "vitest run",
     "db:generate": "prisma generate",

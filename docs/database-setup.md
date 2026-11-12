@@ -359,6 +359,23 @@ npm run db:studio
 Open [http://localhost:5555](http://localhost:5555), then stop Prisma Studio
 with `Ctrl+C` when finished.
 
+### 7. Run the database-backed course workflow
+
+Start the API and frontend in separate terminals:
+
+```powershell
+# Terminal 1
+npm run dev:api
+
+# Terminal 2
+npm run dev
+```
+
+Open the Vite URL printed in Terminal 2. The completed-course workflow now
+loads, adds, and removes selections through the Prisma API and PostgreSQL.
+The API validates unknown course IDs and returns a conflict for duplicate
+selections. The browser does not connect directly to PostgreSQL.
+
 ## Accessing the database built on another computer
 
 The current database is a local PostgreSQL instance on the owner's computer.
@@ -367,11 +384,11 @@ The current database is a local PostgreSQL instance on the owner's computer.
 
 For normal team development, use one of these approaches:
 
-1. **Recommended:** create a shared no-cost development PostgreSQL database
-   through an approved provider, then share its connection details through a
-   secure channel. Each teammate uses the same committed migrations and seed
-   command.
-2. **Local-only development:** each teammate creates a local database by
+1. **Planned shared option:** create a Supabase free PostgreSQL project, then
+   share its connection details through a secure channel. Each teammate uses
+   the same committed migrations and seed command. The Supabase project has
+   not been configured in this repository yet.
+2. **Current option:** each teammate creates a local database by
    following the setup above. This is appropriate until a shared development
    server is approved.
 

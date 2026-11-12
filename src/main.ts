@@ -209,13 +209,8 @@ function render(focusTarget?: string): void {
     <main class="app-shell" aria-labelledby="page-title">
       <header class="panel-heading">
         <div>
-<<<<<<< Updated upstream
-          <h1 id="page-title">Add what you already know</h1>
-          <p>Build your ${escapeHtml(startingPointLabel)} starting point.</p>
-=======
           <h1 id="page-title">${pageHeading.title}</h1>
           <p>${pageHeading.description}</p>
->>>>>>> Stashed changes
         </div>
         <div class="session-controls">
           <span class="demo-badge">Local demo session</span>

@@ -4,8 +4,19 @@ import { careerRoadmaps, employerProfiles } from "../src/data/careerGoals";
 import { recommendationCatalog } from "../src/data/recommendations";
 
 const prisma = new PrismaClient();
+const DEMO_STUDENT_ID = "00000000-0000-0000-0000-000000000001";
 
 async function main(): Promise<void> {
+  await prisma.student.upsert({
+    where: { id: DEMO_STUDENT_ID },
+    update: { email: "demo@niner-skills-quest.local", displayName: "Demo Student" },
+    create: {
+      id: DEMO_STUDENT_ID,
+      email: "demo@niner-skills-quest.local",
+      displayName: "Demo Student",
+    },
+  });
+
   for (const skill of skills) {
     await prisma.skill.upsert({
       where: { id: skill.id },

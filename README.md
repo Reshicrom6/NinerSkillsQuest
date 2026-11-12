@@ -20,6 +20,9 @@ For PostgreSQL and Prisma installation, local database creation, migrations,
 seeding, and teammate setup, see
 [docs/database-setup.md](./docs/database-setup.md).
 
+To run the database-backed course workflow, start `npm run dev:api` in one
+terminal and `npm run dev` in another.
+
 ## Commands
 
 ```sh
