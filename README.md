@@ -65,7 +65,8 @@ Charlotte catalog. Catalog topics are suggestions, not confirmed current
 elective offerings; check the current catalog and prerequisites.
 
 The course-entry screen follows the supplied Figma course panel. The project or
-experience tab and in-progress status are shown only as disabled visual context;
+experience tab shows a "Feature not implemented" alert when clicked, and the
+in-progress status is shown only as disabled visual context;
 this feature handles completed courses only.
 
 ## Assignment evidence

@@ -141,11 +141,6 @@ select {
   font-weight: 700;
 }
 
-.entry-tab:disabled {
-  cursor: not-allowed;
-  opacity: 1;
-}
-
 .course-form {
   display: flex;
   flex-direction: column;

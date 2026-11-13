@@ -2,7 +2,7 @@
 
 ## Design and scope
 
-The course-entry screen follows the supplied Figma design, [Manual course entry (node 76:6436)](https://www.figma.com/design/ztzR03BJFCBGFtCh3bacCc/Niner-Skills-Quest--Copy-?node-id=76-6436). Its neutral surface, compact course card, green skill/status chips, and purple coursework notice guide the visual treatment. Project/experience entry and in-progress course tracking remain disabled or out of scope because this plan covers completed courses only.
+The course-entry screen follows the supplied Figma design, [Manual course entry (node 76:6436)](https://www.figma.com/design/ztzR03BJFCBGFtCh3bacCc/Niner-Skills-Quest--Copy-?node-id=76-6436). Its neutral surface, compact course card, green skill/status chips, and purple coursework notice guide the visual treatment. Project/experience entry shows a "Feature not implemented" alert when its tab is clicked, and in-progress course tracking remains disabled or out of scope because this plan covers completed courses only.
 
 This feature starts with a local demo. Authentication, transcript upload, and backend infrastructure are out of scope.
 
