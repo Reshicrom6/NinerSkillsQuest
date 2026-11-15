@@ -2,13 +2,17 @@
 
 ## Phase 1 status
 
-Phase 1 data-model analysis is complete. The project will use PostgreSQL with
-Prisma as the ORM and a separate data-access layer. ORM generation, migrations,
-and database connection code will follow this approved model.
+PostgreSQL with Prisma is implemented. The schema, initial migration, seed
+script, and completed-course API are in the repository. The local PostgreSQL
+database and a new Supabase development database have both been verified. The
+committed migration and illustrative catalog seed are applied in Supabase; an
+API smoke test verified add, duplicate and invalid-course rejection, retrieval
+after an API restart, removal, and cleanup of its temporary student.
 
-The current browser demo still uses `localStorage` and illustrative TypeScript
-catalog data. The model below defines the target persistence design; it does
-not claim that database integration is complete.
+The Supabase verification transferred schema and illustrative seed data only;
+it did not copy local course selections. Teammate access remains unverified.
+Course data is database-backed when the API is running; career goals and
+demo-session state remain browser-local.
 
 ## Selected persistence scope
 
@@ -223,14 +227,15 @@ Acceptance criteria:
 
 ## Team verification table
 
-Complete this table after database integration is implemented. Do not include
+Record only operations actually performed by each member. Do not include
 credentials or private connection strings.
 
 | Team member | Operation | Result |
 | --- | --- | --- |
-| To be completed | Create a test course selection | Pending |
-| To be completed | Retrieve a saved selection | Pending |
-| To be completed | Update or remove a selection | Pending |
+| Kaushal Gajula (local environment) | Migration status, seed, API add, duplicate and invalid-course rejection, API restart/retrieve, remove | Passed |
+| Kaushal Gajula (Supabase development project) | Applied migration and seed; API add, duplicate and invalid-course rejection, API restart/retrieve, remove, temporary-student cleanup | Passed |
+| Teammate 2 | Pending individual verification | Pending |
+| Teammate 3 | Pending individual verification | Pending |
 
 ## Database choice
 
@@ -240,9 +245,10 @@ recommendations. PostgreSQL provides foreign keys and composite constraints,
 while Prisma provides typed access, migration files, and a reproducible seed
 workflow.
 
-Each developer should run PostgreSQL locally or through Docker. A shared
-development database may be configured later, but credentials must remain in a
-local `.env` file and never in Git.
+The verified configurations include local PostgreSQL and a Supabase
+development project. Team agreement and other members' access are still
+pending. Keep connection credentials in each member's local `.env` file and
+never commit or post them.
 
 ## Teammate installation and local setup
 
@@ -376,27 +382,73 @@ loads, adds, and removes selections through the Prisma API and PostgreSQL.
 The API validates unknown course IDs and returns a conflict for duplicate
 selections. The browser does not connect directly to PostgreSQL.
 
-## Accessing the database built on another computer
+### Run the database API integration test
 
-The current database is a local PostgreSQL instance on the owner's computer.
-`localhost` always means the computer running the command, so a teammate's
-`.env` cannot use `localhost` to reach this database.
+Set `DATABASE_URL_TEST` in the current shell to a migrated and seeded
+PostgreSQL test database, then run:
 
-For normal team development, use one of these approaches:
+```powershell
+npm run test:db
+```
 
-1. **Planned shared option:** create a Supabase free PostgreSQL project, then
-   share its connection details through a secure channel. Each teammate uses
-   the same committed migrations and seed command. The Supabase project has
-   not been configured in this repository yet.
-2. **Current option:** each teammate creates a local database by
-   following the setup above. This is appropriate until a shared development
-   server is approved.
+The test creates a uniquely identified temporary student, exercises the
+completed-course API, restarts the API server to verify persistence, and
+deletes that student in cleanup. It requires the seeded `itcs-2214` course.
+Use a test database, not a shared or production database. The recorded local
+verification used the existing local PostgreSQL database and cleaned up its
+temporary student; a separate test database is recommended for repeated or
+team runs.
+
+## Supabase development database
+
+A Supabase PostgreSQL development project has been configured using the direct
+connection option from the dashboard's **Connect** dialog. The initial Prisma
+migration and illustrative seed data are applied. The seed includes a demo
+student and catalog/reference records; no local course selections were
+transferred.
+
+To connect the API to Supabase, set `DATABASE_URL` in the local, ignored
+`.env` to the connection string copied from Supabase. Do not paste the actual
+URL or password into source files, issues, screenshots, or chat. Preserve the
+local database URL separately if you still need to switch back to local
+PostgreSQL. Direct connections may require IPv6; if a teammate cannot connect,
+select the Session pooler in the Supabase dashboard and use its connection
+string instead.
+
+For a new deployment of committed migrations to the hosted development
+database, run:
+
+```powershell
+npm run db:migrate:deploy
+```
+
+Seed only illustrative records with:
+
+```powershell
+npm run db:seed
+```
+
+The seed refreshes course-skill and roadmap-skill mappings for the seeded
+catalog. Do not rerun it if those mappings have been intentionally edited in
+Supabase.
+
+## Teammate connection options
+
+The Supabase development project is available as the potential shared
+PostgreSQL environment, but each teammate's access still needs to be verified.
+Share the connection string only through an approved secure channel; each
+teammate stores it in their own ignored `.env`.
+
+Alternatively, a teammate can use a separate local PostgreSQL database and
+apply the same committed migrations and seed script. `localhost` always means
+the computer running the command and does not connect to another teammate's
+local server.
 
 Do not expose a home computer's PostgreSQL port to the public internet. Do not
 commit a shared connection string, password, private key, or service-account
-credential. If the team later selects a shared provider, document only the
-provider, database name, non-secret variable names, and connection procedure
-here; distribute the actual secret separately.
+credential. When documenting a provider, include only the provider, database
+name, non-secret variable names, and connection procedure here; distribute
+actual secrets separately.
 
 ## Prisma workflow for schema changes
 
@@ -409,7 +461,9 @@ npm run db:seed
 ```
 
 Commit `prisma/schema.prisma` and the new `prisma/migrations/` directory.
-Teammates then pull the changes and run:
+For the hosted Supabase development database, apply already-committed
+migrations with `npm run db:migrate:deploy`. Teammates then pull the changes
+and apply them to their own local database with:
 
 ```powershell
 npm install
