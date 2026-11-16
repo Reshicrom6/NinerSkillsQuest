@@ -5,7 +5,7 @@
 **Jed Duncan**
 
 This file records my individual assignment details separately from the shared
-links in [assignment-deliverables.md](./assignment-deliverables.md).
+links in [assignment-deliverables.md](../assignment-deliverables.md).
 
 ## My development contributions
 
@@ -18,7 +18,7 @@ My work for this submission included:
 - Updating the course action label to “Check save status.”
 - Adding individual GitHub Education, Copilot, and Figma MCP screenshots.
 - Developing a Prisma persistence model and database-backed course workflow
-  on the separate `databasetesting-jed` branch.
+  on the separate `databasetesting-jed` branch. This branch is now defunct.
 
 ## Individual implementation evidence
 
@@ -31,8 +31,8 @@ persists completed courses through the Prisma API and PostgreSQL.
 
 Supporting documents:
 
-- [Issue #1 plan](./issue-1-plan.md)
-- [Issue #1 test results](./issue-1-test-results.md)
+- [Issue #1 plan](../issue_details/issue-1-plan.md)
+- [Issue #1 test results](../issue_details/issue-1-test-results.md)
 - [Issue #1](https://github.com/kgajula1-stack/NinerSkillsQuest/issues/1)
 - [PR #20](https://github.com/kgajula1-stack/NinerSkillsQuest/pull/20)
 
@@ -75,14 +75,14 @@ Acceptance criteria verified:
 - Invalid saved data and storage failures produce recoverable messages.
 - Course selection and removal work with keyboard navigation.
 
-See [Issue #1 test results](./issue-1-test-results.md) for the recorded
+See [Issue #1 test results](../issue_details/issue-1-test-results.md) for the recorded
 browser demonstration and automated test coverage.
 
 ## Database setup and verification
 
 The local PostgreSQL database was configured for Prisma, initialized with the
 committed migration, and populated with the illustrative reference data using
-the seed script. See the [database setup guide](./database-setup.md) for the
+the seed script. See the [database setup guide](../database-setup.md) for the
 connection configuration and setup commands.
 
 The database API integration test passed:
