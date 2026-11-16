@@ -16,15 +16,17 @@ Known implemented concepts include:
 - Learning recommendations for an unrecorded target skill from Issue #4.
 - A clearly labeled local demo session rather than real authentication.
 
-## Phase 1 reviewed design decisions
+## Reviewed design decisions
 
 - Course, skill, roadmap, employer, and recommendation catalogs are reference
-  records that will be seeded.
+  records loaded by the Prisma seed.
 - Student profiles, completed courses, and the current career goal are
-  student-owned persisted data.
+  modeled as student-owned persisted data. The current course API persists
+  completed courses; career-goal persistence remains browser-local.
 - Current skills, target profiles, and skill-gap results are derived from
   relationship queries rather than stored redundantly.
-- Persistence will be separated from render logic and state stores.
+- Course persistence is separated from render logic through the course
+  selection store and Node API.
 - The local demo session is not verified university authentication and will
   remain outside the persistent domain model.
 - The current UI supports one active career goal per student, so
@@ -43,15 +45,25 @@ foreign-key integrity, prevents duplicate roadmap-skill mappings, and supports
 relationship queries without storing a serialized array. The same normalized
 approach is used for course-to-skill mappings and student course selections.
 
-## Decisions still requiring team approval
+## Implementation review
 
-- Database provider and ORM/SDK.
-- Backend or API boundary for database access.
-- Student identity strategy for the demo.
-- Shared versus per-member development database.
-- Migration and seed-data workflow.
-- Error behavior when the database is unavailable.
+The project uses PostgreSQL with Prisma. The schema and initial migration are
+in `prisma/`; reference data is populated by `prisma/seed.ts`. The completed
+course API validates course IDs, relies on the composite student-course key to
+reject duplicates, and returns persisted selections with mapped skills.
+The database integration test verifies add, duplicate rejection, invalid
+course rejection, retrieval after restarting the API, and removal using a
+temporary test student.
 
-No ORM, migration, database connection, or persistent feature has been
-generated from these notes. ORM implementation should begin only after the
-team approves the Phase 1 model.
+The UML class and sequence diagrams are available as PlantUML sources and
+rendered SVGs in `docs/uml/`.
+
+## Remaining team decisions
+
+- Whether to configure a shared team development database; the current
+  verified connection is local.
+- How to demonstrate every teammate's database connectivity and contribution.
+- Whether to persist career goals through the API in a future feature.
+
+The API uses a fixed demo student ID and is not authentication or account
+isolation. Do not use it with real student data.

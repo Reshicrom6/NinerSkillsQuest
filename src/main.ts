@@ -137,7 +137,6 @@ function render(focusTarget?: string): void {
   }[activePage];
   const state = courseSelectionStore.getState();
   const careerGoal = careerGoalStore.getState();
-  const startingPointLabel = careerGoal.selectedRoadmap?.name ?? "career";
   const selectedIds = new Set(state.completedCourseIds);
   const availableCourses = courses.filter((course) => !selectedIds.has(course.id));
   const normalizedQuery = searchQuery.trim().toLowerCase();
