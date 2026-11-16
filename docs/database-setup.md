@@ -266,9 +266,11 @@ winget install --id PostgreSQL.PostgreSQL.17 --exact `
   --accept-package-agreements --accept-source-agreements
 ```
 
-During PostgreSQL installation, each teammate must choose and remember a local
-password for the `postgres` user. The password may be different on each
-computer.
+The `winget` command above runs the installer unattended and sets the initial
+password for the `postgres` database user to `postgres`. If you install
+PostgreSQL interactively instead, use the password you chose during setup.
+This default is for local development only; do not expose the server to other
+computers or the public internet.
 
 Confirm that the PostgreSQL service is running:
 
@@ -292,8 +294,9 @@ npm install
 
 ### 3. Create a local database
 
-Set `PGPASSWORD` only for the current PowerShell session and replace the
-placeholder with the password selected during PostgreSQL installation:
+Set `PGPASSWORD` only for the current PowerShell session. For the `winget`
+installation above, the password is `postgres`; for an interactive
+installation, use the password you chose:
 
 ```powershell
 $env:PGPASSWORD="your-local-postgres-password"
