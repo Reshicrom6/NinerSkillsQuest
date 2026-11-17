@@ -10,6 +10,41 @@ export interface Course {
   skillIds: string[];
 }
 
+export const experienceTypes = [
+  "Project",
+  "Internship",
+  "Work Experience",
+  "Research",
+  "Volunteer",
+  "Other",
+] as const;
+
+export type ExperienceType = (typeof experienceTypes)[number];
+
+export interface Experience {
+  id: string;
+  title: string;
+  type: ExperienceType;
+  description: string;
+  portfolioUrl: string | null;
+  skillIds: string[];
+}
+
+export interface ExperienceInput {
+  title: string;
+  type: string;
+  description: string;
+  portfolioUrl: string;
+  skillIds: string[];
+}
+
+export interface ExperienceValidationErrors {
+  title?: string;
+  type?: string;
+  skillIds?: string;
+  portfolioUrl?: string;
+}
+
 export interface StudentSelections {
   completedCourseIds: string[];
 }

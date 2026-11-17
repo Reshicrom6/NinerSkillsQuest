@@ -9,6 +9,7 @@ export interface CourseSelectionState extends StudentSelections {
   completedCourses: Course[];
   skills: Skill[];
   persistenceMessage: string | null;
+  isLoading: boolean;
 }
 
 type Listener = (state: CourseSelectionState) => void;
@@ -18,8 +19,10 @@ export class CourseSelectionStore {
   private readonly courseById: Map<string, Course>;
   private readonly skillById: Map<string, Skill>;
   private readonly storage: StoragePort | null;
+  private readonly apiEnabled: boolean;
   private completedCourseIds: string[] = [];
   private persistenceMessage: string | null = null;
+  private isLoading = false;
 
   constructor(
     storage?: StoragePort,
@@ -28,8 +31,13 @@ export class CourseSelectionStore {
   ) {
     this.courseById = new Map(courseCatalog.map((course) => [course.id, course]));
     this.skillById = new Map(skillCatalog.map((skill) => [skill.id, skill]));
-    this.storage = storage === undefined ? this.getBrowserStorage() : storage;
-    this.loadSelections();
+    this.apiEnabled = storage === undefined && typeof window !== "undefined";
+    this.storage = storage === undefined ? null : storage;
+    if (this.apiEnabled) {
+      void this.loadFromApi();
+    } else {
+      this.loadSelections();
+    }
   }
 
   getState(): CourseSelectionState {
@@ -54,6 +62,7 @@ export class CourseSelectionStore {
       completedCourses,
       skills: derivedSkills,
       persistenceMessage: this.persistenceMessage,
+      isLoading: this.isLoading,
     };
   }
 
@@ -63,6 +72,11 @@ export class CourseSelectionStore {
   }
 
   addCourse(courseId: string): void {
+    if (this.apiEnabled) {
+      void this.addCourseThroughApi(courseId);
+      return;
+    }
+
     if (!this.courseById.has(courseId) || this.completedCourseIds.includes(courseId)) {
       return;
     }
@@ -73,6 +87,11 @@ export class CourseSelectionStore {
   }
 
   removeCourse(courseId: string): void {
+    if (this.apiEnabled) {
+      void this.removeCourseThroughApi(courseId);
+      return;
+    }
+
     if (!this.completedCourseIds.includes(courseId)) {
       return;
     }
@@ -89,6 +108,66 @@ export class CourseSelectionStore {
       this.persistenceMessage =
         "Your selections will work for this session, but browser storage is unavailable.";
       return null;
+    }
+  }
+
+  private async loadFromApi(): Promise<void> {
+      this.isLoading = true;
+      this.notify();
+      try {
+        const response = await fetch("/api/courses/completed");
+        if (!response.ok) {
+          throw new Error("The saved courses could not be loaded.");
+        }
+        const selections = (await response.json()) as Course[];
+        this.completedCourseIds = selections.map((course) => course.id);
+        this.persistenceMessage = null;
+      } catch (error) {
+        this.persistenceMessage =
+          error instanceof Error ? error.message : "The saved courses could not be loaded.";
+      } finally {
+        this.isLoading = false;
+        this.notify();
+      }
+    }
+
+  private async addCourseThroughApi(courseId: string): Promise<void> {
+      try {
+        const response = await fetch("/api/courses/completed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ courseId }),
+        });
+        const body = (await response.json()) as { error?: string } | Course[];
+        if (!response.ok) {
+          throw new Error("error" in body ? body.error ?? "The course could not be saved." : "The course could not be saved.");
+        }
+        this.completedCourseIds = (Array.isArray(body) ? body : []).map((course) => course.id);
+        this.persistenceMessage = null;
+        this.notify();
+      } catch (error) {
+        this.persistenceMessage =
+          error instanceof Error ? error.message : "The course could not be saved.";
+        this.notify();
+      }
+    }
+
+  private async removeCourseThroughApi(courseId: string): Promise<void> {
+      try {
+        const response = await fetch(`/api/courses/completed/${encodeURIComponent(courseId)}`, {
+          method: "DELETE",
+        });
+        const body = (await response.json()) as { error?: string } | Course[];
+        if (!response.ok) {
+          throw new Error("error" in body ? body.error ?? "The course could not be removed." : "The course could not be removed.");
+        }
+        this.completedCourseIds = (Array.isArray(body) ? body : []).map((course) => course.id);
+        this.persistenceMessage = null;
+        this.notify();
+      } catch (error) {
+        this.persistenceMessage =
+          error instanceof Error ? error.message : "The course could not be removed.";
+        this.notify();
     }
   }
 

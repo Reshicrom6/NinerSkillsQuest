@@ -5,7 +5,7 @@
 **Kaushal Gajula**
 
 This file records my individual assignment details separately from the shared
-links in [assignment-deliverables.md](./assignment-deliverables.md).
+links in [assignment-deliverables.md](../assignment-deliverables.md).
 
 ## My development contributions
 
@@ -31,12 +31,12 @@ My work for this submission included:
 The application supports course search, course selection, duplicate
 prevention, removal, derived skill display, and local persistence.
 
-![Completed-course workflow](./screenshots/issue-1-completed-courses.png)
+![Completed-course workflow](./Kaushal-Screenshots/issue-1-completed-courses.png)
 
 Supporting documents:
 
-- [Issue #1 plan](./issue-1-plan.md)
-- [Issue #1 test results](./issue-1-test-results.md)
+- [Issue #1 plan](../issue_details/issue-1-plan.md)
+- [Issue #1 test results](../issue_details/issue-1-test-results.md)
 - [Issue #1](https://github.com/kgajula1-stack/NinerSkillsQuest/issues/1)
 - [PR #20](https://github.com/kgajula1-stack/NinerSkillsQuest/pull/20)
 
@@ -45,12 +45,12 @@ Supporting documents:
 The application supports selecting a career roadmap and Charlotte employer,
 displaying target skills, changing either selection, and persisting the goal.
 
-![Career-goal selection](./screenshots/issue-2-career-goal.png)
+![Career-goal selection](./Kaushal-Screenshots/issue-2-career-goal.png)
 
 Supporting documents:
 
-- [Issue #2 plan](./issue-2-plan.md)
-- [Issue #2 test results](./issue-2-test-results.md)
+- [Issue #2 plan](../issue_details/issue-2-plan.md)
+- [Issue #2 test results](../issue_details/issue-2-test-results.md)
 - [Issue #2](https://github.com/kgajula1-stack/NinerSkillsQuest/issues/2)
 
 ### Skill comparison
@@ -59,11 +59,11 @@ The application separates target skills matched by recorded course mappings
 from target skills not recorded by the current course list. Unrecorded skills
 are not presented as proof that a student lacks those skills.
 
-![Skill comparison](./screenshots/issue-3-skill-comparison.png)
+![Skill comparison](./Kaushal-Screenshots/issue-3-skill-comparison.png)
 
 Supporting documents:
 
-- [Issue #3 test results](./issue-3-test-results.md)
+- [Issue #3 test results](../issue_details/issue-3-test-results.md)
 - [Issue #3](https://github.com/kgajula1-stack/NinerSkillsQuest/issues/3)
 - [PR #21](https://github.com/kgajula1-stack/NinerSkillsQuest/pull/21)
 
@@ -72,7 +72,7 @@ Supporting documents:
 The local demo access and sign-out flow are clearly labeled and do not claim
 to authenticate real student identities.
 
-![Local demo session](./screenshots/issue-5-demo-session.png)
+![Local demo session](./Kaushal-Screenshots/issue-5-demo-session.png)
 
 ## Individual tooling and evidence
 
@@ -82,8 +82,8 @@ GitHub Copilot access and Copilot Chat functionality were verified in Visual
 Studio Code. Copilot helped with repository analysis, implementation,
 testing, and documentation. Generated work was reviewed and validated.
 
-- [Copilot account verification](./screenshots/copilotaccountverification.png)
-- [Copilot functionality](./screenshots/copilotVerfication.png)
+- [Copilot account verification](./Kaushal-Screenshots/copilotaccountverification.png)
+- [Copilot functionality](./Kaushal-Screenshots/copilotVerfication.png)
 
 ### Figma MCP
 
@@ -104,10 +104,10 @@ npm run build -> Passed: TypeScript check and Vite production build
 
 Additional browser evidence:
 
-- [Empty-state screenshot](./screenshots/feature-empty-state.png)
-- [Combined course and goal screenshot](./screenshots/feature-course-and-goal.png)
-- [GitHub Issues screenshot](./screenshots/githubIssues.png)
-- [Sprint 1 Project screenshot](./screenshots/githubProjectboard.png)
+- [Empty-state screenshot](./Kaushal-Screenshots/feature-empty-state.png)
+- [Combined course and goal screenshot](./Kaushal-Screenshots/feature-course-and-goal.png)
+- [GitHub Issues screenshot](./Kaushal-Screenshots/githubIssues.png)
+- [Sprint 1 Project screenshot](./Kaushal-Screenshots/githubProjectboard.png)
 
 ## Individual completion checklist
 
@@ -120,4 +120,3 @@ Additional browser evidence:
 - [x] Testing and build results documented
 - [x] Figma prototype link included
 - [ ] Figma MCP design-context screenshot pending rate-limit reset
-

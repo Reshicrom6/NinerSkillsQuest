@@ -1,28 +1,68 @@
 @startuml
-title Niner Skills Quest - provisional completed-course persistence flow
+title Niner Skills Quest - database-backed completed-course flow
 
 actor Student
 boundary "Course entry UI" as UI
-control "Application state/service" as Service
-database "Data-access layer" as Repository
-database "Development database" as DB
+control "CourseSelectionStore" as Store
+control "Node.js API" as API
+participant "Prisma ORM" as ORM
+database "PostgreSQL database" as DB
 
-Student -> UI: Search and select a supported course
-UI -> Service: Request course selection
-Service -> Service: Validate course ID and duplicate state
-alt Invalid or duplicate course
-  Service --> UI: Recoverable validation error
-else Valid selection
-  Service -> Repository: Save student-course selection
-  Repository -> DB: Insert or update record
-  DB --> Repository: Persisted record
-  Repository --> Service: Saved selection
-  Service --> UI: Refresh courses and mapped skills
-  UI --> Student: Show saved course and skills
+Student -> UI: Select a supported course
+UI -> Store: addCourse(courseId)
+Store -> API: POST /api/courses/completed
+API -> ORM: course.findUnique(courseId)
+ORM -> DB: Find course
+DB --> ORM: Course record or null
+alt Unknown course
+  ORM --> API: null
+  API --> Store: 400 course does not exist
+  Store --> UI: Set persistence message and notify
+  UI --> Student: Show validation error
+else Known course
+  ORM --> API: Course record
+  API -> ORM: studentCourse.create(studentId, courseId)
+  ORM -> DB: Insert StudentCourse
+  alt Duplicate selection
+    DB --> ORM: Composite-key violation
+    ORM --> API: P2002
+    API --> Store: 409 course already selected
+    Store --> UI: Set persistence message and notify
+    UI --> Student: Show duplicate error
+  else New selection
+    DB --> ORM: Persisted selection
+    API -> ORM: studentCourse.findMany with course skills
+    ORM -> DB: Read saved courses and mappings
+    DB --> ORM: Courses and mapped skills
+    ORM --> API: Saved selections
+    API --> Store: 201 selections
+    Store --> UI: Update state and notify
+    UI --> Student: Show saved course and skills
+  end
 end
 
-note over Service,DB
-The database, ORM, identity model, and API boundary
-are not selected yet.
-end note
+Student -> UI: Restart the application
+UI -> Store: Initialize and load selections
+Store -> API: GET /api/courses/completed
+API -> ORM: studentCourse.findMany with course skills
+ORM -> DB: Read saved courses and mappings
+DB --> ORM: Persisted courses and mapped skills
+ORM --> API: Saved selections
+API --> Store: 200 selections
+Store --> UI: Restore state and notify
+UI --> Student: Show saved course and skills
+
+Student -> UI: Remove a course
+UI -> Store: removeCourse(courseId)
+Store -> API: DELETE /api/courses/completed/{courseId}
+API -> ORM: studentCourse.delete(studentId, courseId)
+ORM -> DB: Delete StudentCourse
+DB --> ORM: Deletion confirmed
+API -> ORM: studentCourse.findMany
+ORM -> DB: Read remaining selections
+DB --> ORM: Remaining courses and mappings
+ORM --> API: Updated selections
+API --> Store: 200 selections
+Store --> UI: Update state and notify
+UI --> Student: Show updated course list
 @enduml

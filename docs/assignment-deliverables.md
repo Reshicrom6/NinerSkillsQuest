@@ -20,8 +20,8 @@ individual contributions to be reviewed independently.
 | Team member | Individual details |
 | --- | --- |
 | Kaushal Gajula | [Kaushal's individual details](./kaushal-details.md) |
-| Teammate 2 | Add individual details file |
-| Teammate 3 | Add individual details file |
+| Carter Hofmann | [Carter's individual details](./carter-details.md) |
+| Jed Duncan | [Jed's individual details](./jed-details.md) |
 
 ## Submission links
 
@@ -47,6 +47,7 @@ individual contributions to be reviewed independently.
 - [Issue #4 plan](./issue-4-plan.md)
 - [Issue #4 test results](./issue-4-test-results.md)
 - [Carter's individual details](./carter-details.md)
+- [Jed's individual details](./jed-details.md)
 - [Kaushal's individual details](./kaushal-details.md)
 
 ## Shared project evidence

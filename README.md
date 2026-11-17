@@ -16,27 +16,36 @@ npm run dev
 
 Vite prints a local URL after the development server starts.
 
+For PostgreSQL and Prisma installation, local database creation, migrations,
+seeding, and teammate setup, see
+[docs/database-setup.md](./docs/database-setup.md).
+
+To run the database-backed course workflow, start `npm run dev:api` in one
+terminal and `npm run dev` in another.
+
 ## Commands
 
 ```sh
 npm run build
 npm test
+npm run lint
 ```
 
-## Sprint 1 verification
-
-The Sprint 1 implementation covers completed-course entry and career-goal
-selection. Run the following commands from a fresh checkout to verify the
-submission:
+The API/database integration test uses a PostgreSQL test database configured
+with `DATABASE_URL_TEST`:
 
 ```sh
-npm install
-npm test
-npm run build
+npm run test:db
 ```
 
-The automated suite currently passes 27 tests across 5 test files, and the
-production build completes successfully with TypeScript checking enabled.
+The test uses a temporary student and removes it during cleanup. Point
+`DATABASE_URL_TEST` at a test database, not a shared or production database.
+
+Latest verification on `feature/experience-integration`: 42 unit tests pass
+across 9 files; lint and the TypeScript/Vite production build pass. The local
+PostgreSQL 17.12 migration and seed succeeded, and
+`GET /api/courses/completed` returned HTTP 200. The database integration test
+was not run because a dedicated `DATABASE_URL_TEST` database is not configured.
 
 ## Usage
 
@@ -46,17 +55,16 @@ only. Sign out to return to the start screen; course and goal data remain in
 this browser and are not isolated by a real account.
 
 Search the supported demo courses by code or title, choose a result, and select
-**Add course**. Remove individual selections at any time. Mapped skills update
-immediately, are deduplicated across selected courses, and are derived from
-course IDs saved in browser `localStorage`. If browser storage is unavailable or
-saved data is invalid, the app displays a message and keeps selections usable for
-the current session. The search field, course selector, add button, and labeled
-remove buttons work with the keyboard; course and skill updates are announced to
-assistive technology. Choose a career roadmap and one of the generic Charlotte
-employer profiles in the career goal section. The demo roadmaps are Backend
-Developer and Full-stack Developer; the current goal and roadmap skill
-targets update immediately and persist in `localStorage`. The roadmap and
-employer selectors are keyboard accessible. With a complete goal, the skill
+**Add course**. Remove individual selections at any time. With the API and
+PostgreSQL running, completed courses persist through the Prisma API and mapped
+skills are derived from their course relationships. API/database errors are
+shown in the interface. The search field, course selector, add button, and
+labeled remove buttons work with the keyboard; course and skill updates are
+announced to assistive technology. Choose a career roadmap and one of the
+generic Charlotte employer profiles in the career goal section. The demo
+roadmaps are Backend Developer and Full-stack Developer; the current goal and
+roadmap skill targets update immediately and persist in `localStorage`. The
+roadmap and employer selectors are keyboard accessible. With a complete goal, the skill
 comparison separates course-mapped target matches from targets not recorded by
 the current course list. Unmatched targets are not treated as proof of missing
 ability. A target skill not recorded by courses can be selected to see a
@@ -65,8 +73,10 @@ Charlotte catalog. Catalog topics are suggestions, not confirmed current
 elective offerings; check the current catalog and prerequisites.
 
 The course-entry screen follows the supplied Figma course panel. The project or
-experience tab and in-progress status are shown only as disabled visual context;
-this feature handles completed courses only.
+experience tab supports adding, viewing, editing, and removing self-reported
+entries. Their supported skills are combined with course skills in Skill
+Review. Project and experience entries are saved in browser `localStorage`, not
+in PostgreSQL.
 
 ## Assignment evidence
 
@@ -95,9 +105,10 @@ issue, pull request, test, and build links required for the lab submission.
 The course catalog and mappings are illustrative, not official catalog data.
 Coursework suggestions are not verified mastery, and roadmap skill targets and
 employer profiles are fictional demo data, not verified hiring requirements or
-employer endorsements. The demo session does not authenticate users or isolate
-one student's data from another. Transcript upload and backend services are not
-included yet.
+employer endorsements. The demo session does not authenticate users or isolate one student's data
+from another. The course API uses a fixed demo student; it is not suitable for
+real student data. Career-goal persistence remains browser-local. Transcript
+upload and other backend workflows are not included.
 
 ## AI-use disclosure
 
