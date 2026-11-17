@@ -133,7 +133,7 @@ describe("course selection state", () => {
     store.addCourse(courses[0].id);
     expect(store.getState().persistenceMessage).toBeNull();
     expect(store.getState().skills).toHaveLength(2);
-    expect(skills).toHaveLength(8);
+    expect(skills).toHaveLength(11);
   });
 
   it("reports failures reading saved selections", () => {

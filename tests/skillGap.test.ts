@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareTargetSkills } from "../src/data/skillGap";
+import { combineSkillIds, compareTargetSkills } from "../src/data/skillGap";
 
 describe("target skill comparison", () => {
   it("separates recorded matches from target skills not recorded", () => {
@@ -16,6 +16,26 @@ describe("target skill comparison", () => {
       matchedSkillIds: ["java"],
       unmatchedTargetSkillIds: ["api"],
     });
+  });
+
+  it("includes experience skills alongside course evidence and preserves shared skills", () => {
+    const courseSkillIds = ["java"];
+    const firstExperienceSkillIds = ["java", "communication"];
+    const secondExperienceSkillIds = ["communication"];
+
+    expect(
+      combineSkillIds(courseSkillIds, firstExperienceSkillIds, secondExperienceSkillIds),
+    ).toEqual(["java", "communication"]);
+    expect(combineSkillIds(courseSkillIds, secondExperienceSkillIds)).toEqual([
+      "java",
+      "communication",
+    ]);
+    expect(
+      compareTargetSkills(
+        combineSkillIds(courseSkillIds, secondExperienceSkillIds),
+        ["communication", "teamwork"],
+      ).matchedSkillIds,
+    ).toEqual(["communication"]);
   });
 
   it("updates the result when either inventory or target skills change", () => {

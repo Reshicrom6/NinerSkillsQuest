@@ -47,6 +47,10 @@ Search text, draft course selection, selected recommendation UI state,
 accessibility announcements, temporary messages, and the local demo sign-in
 state are not database entities. The demo sign-in is not real authentication.
 
+Project/Experience entries and career-goal selections are stored in browser
+`localStorage`, not PostgreSQL. Experience skill IDs are combined with
+course-derived skill IDs by the application when calculating skill matches.
+
 ## Entity and attribute model
 
 ### Student

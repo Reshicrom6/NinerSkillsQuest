@@ -58,6 +58,33 @@ export const learningOptionsBySkillId: Record<string, LearningOptions> = {
     catalogSearchTerm: "Web development",
     resources: [{ title: "MDN web development", url: "https://developer.mozilla.org/en-US/docs/Learn_web_development" }],
   },
+  communication: {
+    catalogSearchTerm: "Communication studies",
+    resources: [
+      {
+        title: "Communication in the Real World",
+        url: "https://open.lib.umn.edu/communication/",
+      },
+    ],
+  },
+  teamwork: {
+    catalogSearchTerm: "Teamwork and collaboration",
+    resources: [
+      {
+        title: "Atlassian Team Playbook",
+        url: "https://www.atlassian.com/team-playbook",
+      },
+    ],
+  },
+  "problem-solving": {
+    catalogSearchTerm: "Problem solving",
+    resources: [
+      {
+        title: "Stanford d.school Bootcamp Bootleg",
+        url: "https://dschool.stanford.edu/resources/the-bootcamp-bootleg",
+      },
+    ],
+  },
 };
 
 export function getLearningOptions(skillId: string): LearningOptions | null {

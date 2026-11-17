@@ -6,6 +6,10 @@ export interface SkillGapComparison {
   unmatchedTargetSkillIds: string[];
 }
 
+export function combineSkillIds(...sources: readonly (readonly string[])[]): string[] {
+  return [...new Set(sources.flatMap((source) => source))];
+}
+
 export function compareTargetSkills(
   recordedSkillIds: readonly string[],
   targetSkillIds: readonly string[] | null,

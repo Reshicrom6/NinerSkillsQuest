@@ -41,8 +41,11 @@ npm run test:db
 The test uses a temporary student and removes it during cleanup. Point
 `DATABASE_URL_TEST` at a test database, not a shared or production database.
 
-Latest verification: 34 unit tests pass across 8 files; the database API
-integration test passes; lint and the TypeScript/Vite production build pass.
+Latest verification on `feature/experience-integration`: 42 unit tests pass
+across 9 files; lint and the TypeScript/Vite production build pass. The local
+PostgreSQL 17.12 migration and seed succeeded, and
+`GET /api/courses/completed` returned HTTP 200. The database integration test
+was not run because a dedicated `DATABASE_URL_TEST` database is not configured.
 
 ## Usage
 
@@ -70,8 +73,10 @@ Charlotte catalog. Catalog topics are suggestions, not confirmed current
 elective offerings; check the current catalog and prerequisites.
 
 The course-entry screen follows the supplied Figma course panel. The project or
-experience tab and in-progress status are shown only as disabled visual context;
-this feature handles completed courses only.
+experience tab supports adding, viewing, editing, and removing self-reported
+entries. Their supported skills are combined with course skills in Skill
+Review. Project and experience entries are saved in browser `localStorage`, not
+in PostgreSQL.
 
 ## Assignment evidence
 
